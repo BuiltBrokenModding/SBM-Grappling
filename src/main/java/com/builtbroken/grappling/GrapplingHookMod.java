@@ -2,7 +2,9 @@ package com.builtbroken.grappling;
 
 import com.builtbroken.grappling.client.ClientKeyHandler;
 import com.builtbroken.grappling.content.ItemHook;
+import com.builtbroken.grappling.content.MovementHandler;
 import com.builtbroken.grappling.network.PacketManager;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -34,15 +36,19 @@ public class GrapplingHookMod
 
     public static PacketManager packetHandler;
 
+    /** How far can the hook be shot out to hit, -1 means max render */
+    public static int HOOK_REACH_DISTANCE = 100;
+    /** How long in ticks does the hook last before breaking, -1 means off */
+    public static int HOOK_LIFE_TIME = -1;
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
         MinecraftForge.EVENT_BUS.register(new ClientKeyHandler());
+        FMLCommonHandler.instance().bus().register(new MovementHandler());
 
         itemHook = new ItemHook();
         GameRegistry.registerItem(itemHook, "sbmGrapplingHook");
-
-
     }
 
     @Mod.EventHandler

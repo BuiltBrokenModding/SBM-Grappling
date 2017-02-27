@@ -1,7 +1,13 @@
 package com.builtbroken.grappling.content;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+
+import java.util.List;
 
 /**
  * @see <a href="https://github.com/BuiltBrokenModding/VoltzEngine/blob/development/license.md">License</a> for what you can and can't do with the code.
@@ -17,5 +23,21 @@ public class ItemHook extends Item
         setMaxStackSize(1);
 
         setCreativeTab(CreativeTabs.tabTools);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, EntityPlayer player, List lines, boolean b)
+    {
+        lines.add(getTranslation(getUnlocalizedName() + ".info.leftClick"));
+        lines.add(getTranslation(getUnlocalizedName() + ".info.rightClick"));
+        lines.add(getTranslation(getUnlocalizedName() + ".info.scrollWheel"));
+        lines.add(getTranslation(getUnlocalizedName() + ".info.leftClick2"));
+        lines.add(getTranslation(getUnlocalizedName() + ".info.leftClick3"));
+    }
+
+    private String getTranslation(String key)
+    {
+        return key;
     }
 }

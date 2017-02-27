@@ -58,28 +58,28 @@ public class PacketMouseClick extends Packet
             {
                 if (state)
                 {
-                    //TODO pull towards
+                    MovementHandler.pullHook(player, 120);
                 }
                 else
                 {
-                    //TODO stop pulling
+                    MovementHandler.stopMovement(player);
                 }
             }
             else if (!state)
             {
-                //TODO create on mouse release
+                MovementHandler.createHook(player);
             }
         }
         else if (button == 1)
         {
             if (MovementHandler.hasHook(player) && !state)
             {
-                //TODO destroy hook
+                MovementHandler.clearHook(player);
             }
         }
         else
         {
-            //TODO scroll wheel movement
+            MovementHandler.pullHook(player, dwheel);
         }
     }
 }
