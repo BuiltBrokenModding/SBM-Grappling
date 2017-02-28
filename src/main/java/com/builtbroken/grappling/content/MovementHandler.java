@@ -1,9 +1,11 @@
 package com.builtbroken.grappling.content;
 
 import com.builtbroken.grappling.GrapplingHookMod;
+import com.builtbroken.grappling.network.PacketHookSync;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
@@ -67,6 +69,7 @@ public class MovementHandler
             hook.y = movingobjectposition.hitVec.yCoord;
             hook.z = movingobjectposition.hitVec.zCoord;
             hook.side = movingobjectposition.sideHit;
+            hook.distance = getDistanceToHook(hook, player);
 
             playerToHook.put(player, hook);
             player.addChatComponentMessage(new ChatComponentText("Hook created"));
@@ -151,8 +154,19 @@ public class MovementHandler
      */
     public static class Hook
     {
+        /** Hook location */
         public double x, y, z;
-        public int side, movement;
+        /** Current rope distance */
+        public double distance;
+        /** Side of the block attached to */
+        public int side;
+        /** Direction and speed of movement */
+        public int movement;
+
+        public Vec3 toVec3()
+        {
+            return Vec3.createVectorHelper(x, y, z);
+        }
 
         //TODO track rope distance so we can hold the player mid air
 
@@ -168,31 +182,103 @@ public class MovementHandler
     {
         if (event.phase == TickEvent.Phase.START)
         {
+            //Loop all hooks to update player movement
             for (Map.Entry<EntityPlayer, Hook> entry : playerToHook.entrySet())
             {
+                Hook hook = entry.getValue();
+                EntityPlayer player = entry.getKey();
+
+                //Only update if movement is above 0
                 if (entry.getValue().movement > 0)
                 {
-                    //Get delta
-                    double xDifference = entry.getValue().x - entry.getKey().posX;
-                    double yDifference = entry.getValue().y - entry.getKey().posY;
-                    double zDifference = entry.getValue().z - entry.getKey().posZ;
-                    //Get mag
-                    double mag = Math.sqrt(xDifference * xDifference + yDifference * yDifference + zDifference * zDifference);
-                    //Normalize
-                    xDifference = xDifference / mag;
-                    yDifference = yDifference / mag;
-                    zDifference = zDifference / mag;
-
                     //Update position
-                    //entry.getKey().posX += xDifference;
-                    //entry.getKey().posY += yDifference;
-                    //entry.getKey().posZ += zDifference;
-                    entry.getKey().moveEntity(xDifference, yDifference, zDifference);
-                    entry.getKey().setPositionAndUpdate(entry.getKey().posX, entry.getKey().posY, entry.getKey().posZ);
+                    double distance = getDistanceToHook(hook, player);
+                    if (distance > 1)
+                    {
+                        //Move entity
+                        Vec3 pull = getPullDirection(hook, player);
+                        player.moveEntity(pull.xCoord * GrapplingHookMod.HOOK_PULL_PERCENT, pull.yCoord * GrapplingHookMod.HOOK_PULL_PERCENT, pull.zCoord * GrapplingHookMod.HOOK_PULL_PERCENT);
+
+                        //Update rope distance
+                        double distance2 = getDistanceToHook(hook, player);
+                        hook.distance -= distance - distance2;
+                    }
+                }
+
+                //Update position to prevent getting out of rope distance
+                double distance = getDistanceToHook(hook, player);
+                double delta = distance - hook.distance;
+                if (delta > 0.001)
+                {
+                    float percent = (float) (delta / hook.distance);
+                    Vec3 pull = getPullDirection(hook, player);
+                    pull = Vec3.createVectorHelper(pull.xCoord * percent, pull.yCoord * percent, pull.zCoord * percent);
+                    player.moveEntity(pull.xCoord, pull.yCoord, pull.zCoord);
+                }
+                else
+                {
+                    //Assume if player gets closer hook auto retracts rope
+                    hook.distance = distance;
+                }
+
+                //Send update packet to client so position syncs correctly
+                player.setPositionAndUpdate(entry.getKey().posX, entry.getKey().posY, entry.getKey().posZ);
+            }
+            //Loop all players (this is an O(n^2) operation)
+            for (EntityPlayer player : playerToHook.keySet())
+            {
+                if (player instanceof EntityPlayerMP)
+                {
+                    PacketHookSync packetHookSync = new PacketHookSync();
+                    packetHookSync.playerHook = playerToHook.get(player);
+                    for (Map.Entry<EntityPlayer, Hook> entry : playerToHook.entrySet())
+                    {
+                        if (entry.getKey() != player && getDistanceToHook(entry.getValue(), player) < 200)
+                        {
+                            packetHookSync.usernameToHookLocation.put(player.getCommandSenderName(), entry.getValue().toVec3());
+                        }
+                    }
+                    GrapplingHookMod.packetHandler.sendToPlayer(packetHookSync, (EntityPlayerMP) player);
                 }
             }
-            //TODO sync hooks to client
-            //TODO ensure to sync hook locations that are near player only or player who owns the hook is near
         }
+    }
+
+    /**
+     * Gets the direction in which to pull the player towards the hook
+     *
+     * @param hook   - location of the hook
+     * @param player - player
+     * @return vector representing the direction
+     */
+    public static Vec3 getPullDirection(Hook hook, EntityPlayer player)
+    {
+        //Get delta
+        double xDifference = hook.x - player.posX;
+        double yDifference = hook.y - player.posY;
+        double zDifference = hook.z - player.posZ;
+        //Get mag (flat distance)
+        double mag = Math.sqrt(xDifference * xDifference + yDifference * yDifference + zDifference * zDifference);
+        //Normalize
+        xDifference = xDifference / mag;
+        yDifference = yDifference / mag;
+        zDifference = zDifference / mag;
+
+        return Vec3.createVectorHelper(xDifference, yDifference, zDifference);
+    }
+
+    /**
+     * Gets the distance to the hook from the player
+     *
+     * @param hook
+     * @param player
+     * @return
+     */
+    public static double getDistanceToHook(Hook hook, EntityPlayer player)
+    {
+        double xDifference = hook.x - player.posX;
+        double yDifference = hook.y - player.posY;
+        double zDifference = hook.z - player.posZ;
+        return Math.sqrt(xDifference * xDifference + yDifference * yDifference + zDifference * zDifference);
     }
 }

@@ -40,6 +40,8 @@ public class GrapplingHookMod
     public static int HOOK_REACH_DISTANCE = 100;
     /** How long in ticks does the hook last before breaking, -1 means off */
     public static int HOOK_LIFE_TIME = -1;
+    /** Percentage of pull speed to use when changing motion, 0.0-1.0 where 0 = 0%, 1=100% */
+    public static float HOOK_PULL_PERCENT = 1;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
