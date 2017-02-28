@@ -4,7 +4,6 @@ import com.builtbroken.grappling.GrapplingHookMod;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
@@ -61,14 +60,27 @@ public class MovementHandler
     public static void createHook(EntityPlayer player)
     {
         MovingObjectPosition movingobjectposition = _doRayTrace(player, player.rotationYawHead, player.rotationPitch);
-
-        player.addChatComponentMessage(new ChatComponentText("Hit: " + movingobjectposition));
         if (movingobjectposition != null && movingobjectposition.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK)
         {
-            player.worldObj.setBlock(movingobjectposition.blockX, movingobjectposition.blockY, movingobjectposition.blockZ, Blocks.gold_block);
+            Hook hook = new Hook();
+            hook.x = movingobjectposition.hitVec.xCoord;
+            hook.y = movingobjectposition.hitVec.yCoord;
+            hook.z = movingobjectposition.hitVec.zCoord;
+            hook.side = movingobjectposition.sideHit;
+
+            playerToHook.put(player, hook);
+            player.addChatComponentMessage(new ChatComponentText("Hook created"));
         }
     }
 
+    /**
+     * Called to run the ray trace
+     *
+     * @param player - player
+     * @param yaw    - rotation
+     * @param pitch  - pitch
+     * @return hit from raytrace
+     */
     protected static MovingObjectPosition _doRayTrace(EntityPlayer player, float yaw, float pitch)
     {
         //Figure out where the player is aiming
@@ -93,6 +105,13 @@ public class MovementHandler
         return player.worldObj.rayTraceBlocks(start, end);
     }
 
+    /**
+     * Gets the aim using the pitch and yaw
+     *
+     * @param yaw   - yaw
+     * @param pitch - pitch
+     * @return - aim as a vector
+     */
     protected static Vec3 getAim(float yaw, float pitch)
     {
         float f1 = MathHelper.cos(-yaw * 0.017453292F - (float) Math.PI);
@@ -110,6 +129,7 @@ public class MovementHandler
     public static void clearHook(EntityPlayer player)
     {
         playerToHook.remove(player);
+        player.addChatComponentMessage(new ChatComponentText("Hook removed"));
     }
 
     /**
@@ -129,9 +149,12 @@ public class MovementHandler
     /**
      * Data object to store hook position
      */
-    public class Hook
+    public static class Hook
     {
-        public int x, y, z, side, movement;
+        public double x, y, z;
+        public int side, movement;
+
+        //TODO track rope distance so we can hold the player mid air
 
         @Override
         public String toString()
@@ -147,8 +170,29 @@ public class MovementHandler
         {
             for (Map.Entry<EntityPlayer, Hook> entry : playerToHook.entrySet())
             {
-                entry.getKey().addChatComponentMessage(new ChatComponentText("Hook: " + entry.getValue()));
+                if (entry.getValue().movement > 0)
+                {
+                    //Get delta
+                    double xDifference = entry.getValue().x - entry.getKey().posX;
+                    double yDifference = entry.getValue().y - entry.getKey().posY;
+                    double zDifference = entry.getValue().z - entry.getKey().posZ;
+                    //Get mag
+                    double mag = Math.sqrt(xDifference * xDifference + yDifference * yDifference + zDifference * zDifference);
+                    //Normalize
+                    xDifference = xDifference / mag;
+                    yDifference = yDifference / mag;
+                    zDifference = zDifference / mag;
+
+                    //Update position
+                    //entry.getKey().posX += xDifference;
+                    //entry.getKey().posY += yDifference;
+                    //entry.getKey().posZ += zDifference;
+                    entry.getKey().moveEntity(xDifference, yDifference, zDifference);
+                    entry.getKey().setPositionAndUpdate(entry.getKey().posX, entry.getKey().posY, entry.getKey().posZ);
+                }
             }
+            //TODO sync hooks to client
+            //TODO ensure to sync hook locations that are near player only or player who owns the hook is near
         }
     }
 }

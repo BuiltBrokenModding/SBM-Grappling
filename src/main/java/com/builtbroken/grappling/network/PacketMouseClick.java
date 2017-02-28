@@ -3,7 +3,6 @@ package com.builtbroken.grappling.network;
 import com.builtbroken.grappling.content.MovementHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
 
 /**
  * @see <a href="https://github.com/BuiltBrokenModding/VoltzEngine/blob/development/license.md">License</a> for what you can and can't do with the code.
@@ -50,8 +49,7 @@ public class PacketMouseClick extends Packet
     @Override
     public void handleServerSide(EntityPlayer player)
     {
-        player.addChatComponentMessage(new ChatComponentText("MouseButton: " + button + "  pressed: " + state + "  wheel: " + dwheel));
-
+        //player.addChatComponentMessage(new ChatComponentText("MouseButton: " + button + "  pressed: " + state + "  wheel: " + dwheel));
         if (button == 0)
         {
             if (MovementHandler.hasHook(player))
