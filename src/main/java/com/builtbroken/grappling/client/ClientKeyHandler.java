@@ -1,15 +1,16 @@
 package com.builtbroken.grappling.client;
 
 import com.builtbroken.grappling.GrapplingHookMod;
-import com.builtbroken.grappling.network.PacketMouseClick;
+import com.builtbroken.grappling.network.packets.PacketMouseClick;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.common.gameevent.InputEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.event.MouseEvent;
+import org.lwjgl.input.Keyboard;
 
 /**
  * Handles overriding key bindings to control movement while using a hook
@@ -20,7 +21,6 @@ import net.minecraftforge.client.event.MouseEvent;
 public class ClientKeyHandler
 {
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
     public void mouseHandler(MouseEvent e)
     {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
@@ -30,12 +30,20 @@ public class ClientKeyHandler
             final Item item = stack.getItem();
             if (item == GrapplingHookMod.itemHook)
             {
-                if(e.button == 1 || e.button == 0 || player.isSneaking())
+                if (e.button == 1 || e.button == 0 || player.isSneaking())
                 {
                     GrapplingHookMod.packetHandler.sendToServer(new PacketMouseClick(player.inventory.currentItem, e.button, e.buttonstate, e.dwheel));
                     e.setCanceled(true);
                 }
             }
         }
+    }
+
+    @SubscribeEvent
+    public void keyHandler(InputEvent.KeyInputEvent e)
+    {
+        int key = Keyboard.getEventKey();
+        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+        player.addChatComponentMessage(new ChatComponentText("Key: " + key));
     }
 }

@@ -1,6 +1,10 @@
 package com.builtbroken.grappling.network;
 
 import com.builtbroken.grappling.GrapplingHookMod;
+import com.builtbroken.grappling.network.packets.Packet;
+import com.builtbroken.grappling.network.packets.PacketHookSync;
+import com.builtbroken.grappling.network.packets.PacketMouseClick;
+import com.builtbroken.grappling.network.packets.PacketUpdateLocation;
 import cpw.mods.fml.common.network.FMLIndexedMessageToMessageCodec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,6 +20,8 @@ public class ResonantChannelHandler extends FMLIndexedMessageToMessageCodec<Pack
     public ResonantChannelHandler()
     {
         this.addDiscriminator(0, PacketMouseClick.class);
+        this.addDiscriminator(1, PacketHookSync.class);
+        this.addDiscriminator(2, PacketUpdateLocation.class);
     }
 
     @Override

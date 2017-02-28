@@ -1,4 +1,4 @@
-package com.builtbroken.grappling.network;
+package com.builtbroken.grappling.network.packets;
 
 import com.builtbroken.grappling.content.MovementHandler;
 import io.netty.buffer.ByteBuf;

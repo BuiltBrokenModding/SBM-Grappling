@@ -1,6 +1,7 @@
 package com.builtbroken.grappling.network;
 
 import com.builtbroken.grappling.GrapplingHookMod;
+import com.builtbroken.grappling.network.packets.Packet;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.FMLEmbeddedChannel;
 import cpw.mods.fml.common.network.FMLOutboundHandler;

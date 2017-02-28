@@ -1,4 +1,4 @@
-package com.builtbroken.grappling.network;
+package com.builtbroken.grappling.network.packets;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;

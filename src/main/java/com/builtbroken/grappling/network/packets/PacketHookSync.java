@@ -1,6 +1,7 @@
-package com.builtbroken.grappling.network;
+package com.builtbroken.grappling.network.packets;
 
-import com.builtbroken.grappling.content.MovementHandler;
+import com.builtbroken.grappling.client.ClientHookHandler;
+import com.builtbroken.grappling.content.Hook;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.Vec3;
 
@@ -14,24 +15,28 @@ import java.util.HashMap;
  */
 public class PacketHookSync extends Packet
 {
-    public MovementHandler.Hook playerHook;
+    public Hook playerHook = null;
     public HashMap<String, Vec3> usernameToHookLocation = new HashMap();
 
     @Override
     public void write(ByteBuf buffer)
     {
-
+        buffer.writeBoolean(playerHook != null);
+        playerHook.write(buffer);
     }
 
     @Override
     public void read(ByteBuf buffer)
     {
-
+        if (buffer.readBoolean())
+        {
+            playerHook = Hook.read(buffer);
+        }
     }
 
     @Override
     public void handleClientSide()
     {
-
+        ClientHookHandler.setHook(playerHook);
     }
 }

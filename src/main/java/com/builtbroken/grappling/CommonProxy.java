@@ -6,4 +6,19 @@ package com.builtbroken.grappling;
  */
 public class CommonProxy
 {
+    /**
+     * Called client side to update the position of the player
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
+    public void setPlayerPosition(double x, double y, double z)
+    {
+
+    }
+
+    public void preInit()
+    {
+    }
 }

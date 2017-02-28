@@ -1,4 +1,4 @@
-package com.builtbroken.grappling.content;
+package com.builtbroken.grappling.content.item;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -18,7 +18,7 @@ public class ItemHook extends Item
     public ItemHook()
     {
         setUnlocalizedName("smbgrapplinghook:hook");
-        setTextureName("smbgrapplinghook:hook");
+        setTextureName("smbgrapplinghook:grapple");
         setHasSubtypes(true);
         setMaxStackSize(1);
 

@@ -1,17 +1,23 @@
 package com.builtbroken.grappling.content;
 
 import com.builtbroken.grappling.GrapplingHookMod;
-import com.builtbroken.grappling.network.PacketHookSync;
+import com.builtbroken.grappling.content.entity.EntityHook;
+import com.builtbroken.grappling.network.packets.PacketHookSync;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.WorldServer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,15 +70,24 @@ public class MovementHandler
         MovingObjectPosition movingobjectposition = _doRayTrace(player, player.rotationYawHead, player.rotationPitch);
         if (movingobjectposition != null && movingobjectposition.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK)
         {
+            //Create hook entity
             Hook hook = new Hook();
+            hook.side = movingobjectposition.sideHit;
             hook.x = movingobjectposition.hitVec.xCoord;
             hook.y = movingobjectposition.hitVec.yCoord;
             hook.z = movingobjectposition.hitVec.zCoord;
-            hook.side = movingobjectposition.sideHit;
             hook.distance = getDistanceToHook(hook, player);
-
             playerToHook.put(player, hook);
+
+            //Output that a hook has been created
             player.addChatComponentMessage(new ChatComponentText("Hook created"));
+
+            //Generate hook render entity
+            EntityHook entityHook = new EntityHook(player.worldObj);
+            entityHook.owner = player;
+            entityHook.hook = hook;
+            entityHook.setPosition(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
+            player.worldObj.spawnEntityInWorld(entityHook);
         }
     }
 
@@ -133,6 +148,7 @@ public class MovementHandler
     {
         playerToHook.remove(player);
         player.addChatComponentMessage(new ChatComponentText("Hook removed"));
+        player.fallDistance = 0;
     }
 
     /**
@@ -152,83 +168,89 @@ public class MovementHandler
     /**
      * Data object to store hook position
      */
-    public static class Hook
-    {
-        /** Hook location */
-        public double x, y, z;
-        /** Current rope distance */
-        public double distance;
-        /** Side of the block attached to */
-        public int side;
-        /** Direction and speed of movement */
-        public int movement;
 
-        public Vec3 toVec3()
-        {
-            return Vec3.createVectorHelper(x, y, z);
-        }
-
-        //TODO track rope distance so we can hold the player mid air
-
-        @Override
-        public String toString()
-        {
-            return "Hook[" + x + ", " + y + ", " + z + ", " + side + ", " + movement + "]@" + hashCode();
-        }
-    }
 
     @SubscribeEvent
     public void tickEvent(TickEvent.ServerTickEvent event)
     {
+        //TODO check if player still has hook on hotbar
         if (event.phase == TickEvent.Phase.START)
         {
+            List<EntityPlayer> removeList = new ArrayList();
             //Loop all hooks to update player movement
             for (Map.Entry<EntityPlayer, Hook> entry : playerToHook.entrySet())
             {
-                Hook hook = entry.getValue();
-                EntityPlayer player = entry.getKey();
-
-                //Only update if movement is above 0
-                if (entry.getValue().movement > 0)
+                if (entry.getKey() instanceof EntityPlayerMP)
                 {
-                    //Update position
-                    double distance = getDistanceToHook(hook, player);
-                    if (distance > 1)
-                    {
-                        //Move entity
-                        Vec3 pull = getPullDirection(hook, player);
-                        player.moveEntity(pull.xCoord * GrapplingHookMod.HOOK_PULL_PERCENT, pull.yCoord * GrapplingHookMod.HOOK_PULL_PERCENT, pull.zCoord * GrapplingHookMod.HOOK_PULL_PERCENT);
+                    Hook hook = entry.getValue();
+                    EntityPlayerMP player = (EntityPlayerMP) entry.getKey();
 
-                        //Update rope distance
-                        double distance2 = getDistanceToHook(hook, player);
-                        hook.distance -= distance - distance2;
+                    boolean hasHook = false;
+                    for (int i = 0; i < 9; i++)
+                    {
+                        ItemStack stack = player.inventory.getStackInSlot(i);
+                        if (stack != null && stack.getItem() == GrapplingHookMod.itemHook)
+                        {
+                            hasHook = true;
+                            break;
+                        }
+                    }
+
+                    double distance = getDistanceToHook(hook, player);
+
+                    if (!hasHook || distance >= GrapplingHookMod.HOOK_REACH_DISTANCE + 10)
+                    {
+                        removeList.add(player);
+                        continue;
+                    }
+
+                    //Only update if movement is above 0
+                    if (entry.getValue().movement > 0)
+                    {
+                        //Update position
+                        if (distance > 1)
+                        {
+                            //Move entity
+                            Vec3 pull = getPullDirection(hook, player);
+                            player.moveEntity(pull.xCoord * GrapplingHookMod.HOOK_PULL_PERCENT, pull.yCoord * GrapplingHookMod.HOOK_PULL_PERCENT, pull.zCoord * GrapplingHookMod.HOOK_PULL_PERCENT);
+                            player.setPositionAndUpdate(entry.getKey().posX, entry.getKey().posY, entry.getKey().posZ);
+
+                            //Update rope distance
+                            hook.distance = getDistanceToHook(hook, player);
+                        }
+                    }
+                    else if (entry.getValue().movement < 0)
+                    {
+                        hook.distance += 1.0 / 20.0;
                     }
                 }
-
-                //Update position to prevent getting out of rope distance
-                double distance = getDistanceToHook(hook, player);
-                double delta = distance - hook.distance;
-                if (delta > 0.001)
-                {
-                    float percent = (float) (delta / hook.distance);
-                    Vec3 pull = getPullDirection(hook, player);
-                    pull = Vec3.createVectorHelper(pull.xCoord * percent, pull.yCoord * percent, pull.zCoord * percent);
-                    player.moveEntity(pull.xCoord, pull.yCoord, pull.zCoord);
-                }
-                else
-                {
-                    //Assume if player gets closer hook auto retracts rope
-                    hook.distance = distance;
-                }
-
-                //Send update packet to client so position syncs correctly
-                player.setPositionAndUpdate(entry.getKey().posX, entry.getKey().posY, entry.getKey().posZ);
             }
-            //Loop all players (this is an O(n^2) operation)
-            for (EntityPlayer player : playerToHook.keySet())
+
+            //Remove players from hook data who are in  the remove list
+            for (EntityPlayer player : removeList)
             {
-                if (player instanceof EntityPlayerMP)
+                clearHook(player);
+            }
+        }
+        else
+        {
+            //Update motion limits
+            for (Map.Entry<EntityPlayer, Hook> entry : playerToHook.entrySet())
+            {
+                if (entry.getKey() instanceof EntityPlayerMP)
                 {
+                    Hook hook = entry.getValue();
+                    EntityPlayerMP player = (EntityPlayerMP) entry.getKey();
+                    handleMotionLimits(player, hook);
+                }
+            }
+
+            //Loop all players (this is an O(n^2) operation)
+            for (Object object : MinecraftServer.getServer().getConfigurationManager().playerEntityList)
+            {
+                if (object instanceof EntityPlayerMP)
+                {
+                    EntityPlayer player = (EntityPlayer) object;
                     PacketHookSync packetHookSync = new PacketHookSync();
                     packetHookSync.playerHook = playerToHook.get(player);
                     for (Map.Entry<EntityPlayer, Hook> entry : playerToHook.entrySet())
@@ -245,12 +267,100 @@ public class MovementHandler
     }
 
     /**
+     * Called to handle the movement limits
+     *
+     * @param player
+     * @param hook
+     */
+    public static void handleMotionLimits(EntityPlayer player, Hook hook)
+    {
+        player.addChatComponentMessage(new ChatComponentText("Distance: " + hook.distance + "  Server: " + (player.worldObj instanceof WorldServer)));
+
+        //Check to see if we are outside the max distance
+        double distance = Math.max(getDistanceToHook(hook, player), 2);
+        double delta = Math.abs(distance - hook.distance);
+        float percent = (float) Math.abs(delta / hook.distance);
+        if (percent > .95 && distance > 3)
+        {
+            double backupX = player.posX;
+            double backupY = player.posY;
+            double backupZ = player.posZ;
+            try
+            {
+                //If we are outside the max reset position
+                Vec3 pull = getPullDirection(hook, player);
+                pull = Vec3.createVectorHelper(pull.xCoord * percent, pull.yCoord * percent, pull.zCoord * percent);
+                player.moveEntity(pull.xCoord, pull.yCoord, pull.zCoord);
+                player.setPositionAndUpdate(player.posX, player.posY, player.posZ);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                player.setPositionAndUpdate(backupX, backupY, backupZ);
+            }
+        }
+
+        //Get distance from center point in each directon
+        double xDifference = hook.x - player.posX;
+        double yDifference = hook.y - player.posY;
+        double zDifference = hook.z - player.posZ;
+
+        //Get percentage distance
+        double percentX = Math.abs(xDifference) / distance;
+        double percentY = Math.abs(yDifference) / distance;
+        double percentZ = Math.abs(zDifference) / distance;
+
+        if (percentY > 0.95)
+        {
+            if (yDifference > 0)
+            {
+                //Turn off gravity
+                if (player.motionY < 0.15)
+                {
+                    player.motionY = 0.15D;
+                }
+            }
+            //Disable upward motion when at limit
+            else if (player.motionY > 0)
+            {
+                //TODO redirect energy if its great than a pre set value
+                player.motionY = 0;
+            }
+        }
+        if (percentX > 0.95)
+        {
+            if (xDifference > 0)
+            {
+                player.addChatComponentMessage(new ChatComponentText("At x position limit"));
+            }
+            else
+            {
+                player.addChatComponentMessage(new ChatComponentText("At x negative limit"));
+            }
+        }
+
+        if (percentZ > 0.95)
+        {
+            if (zDifference > 0)
+            {
+                player.addChatComponentMessage(new ChatComponentText("At z position limit"));
+            }
+            else
+            {
+                player.addChatComponentMessage(new ChatComponentText("At z negative limit"));
+            }
+        }
+    }
+
+
+    /**
      * Gets the direction in which to pull the player towards the hook
      *
      * @param hook   - location of the hook
      * @param player - player
      * @return vector representing the direction
      */
+
     public static Vec3 getPullDirection(Hook hook, EntityPlayer player)
     {
         //Get delta
