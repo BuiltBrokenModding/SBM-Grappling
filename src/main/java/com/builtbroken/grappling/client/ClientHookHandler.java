@@ -1,6 +1,7 @@
 package com.builtbroken.grappling.client;
 
 import com.builtbroken.grappling.content.Hook;
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.client.Minecraft;
@@ -27,12 +28,17 @@ public class ClientHookHandler
     @SubscribeEvent
     public void playerTickEvent(TickEvent.PlayerTickEvent event)
     {
-        if (hook != null)
+        if (hook != null && event.player == Minecraft.getMinecraft().thePlayer)
         {
             //MovementHandler.handleMotionLimits(Minecraft.getMinecraft().thePlayer, hook);
             event.player.motionX = 0;
             event.player.motionY = 0;
             event.player.motionZ = 0;
+            if (event.phase == TickEvent.Phase.END)
+            {
+                FxRope rope = new FxRope(event.player.worldObj, event.player.posX, event.player.posY, event.player.posZ, hook.x, hook.y, hook.z, 1);
+                FMLClientHandler.instance().getClient().effectRenderer.addEffect(rope);
+            }
         }
     }
 }
