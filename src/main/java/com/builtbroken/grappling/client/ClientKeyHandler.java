@@ -33,6 +33,7 @@ public class ClientKeyHandler
                 if (e.button == 1 || e.button == 0 || player.isSneaking())
                 {
                     GrapplingHookMod.packetHandler.sendToServer(new PacketMouseClick(player.inventory.currentItem, e.button, e.buttonstate, e.dwheel));
+                    GrapplingHookMod.proxy.handleMouseInput(player, e.button, e.buttonstate, e.dwheel);
                     e.setCanceled(true);
                 }
             }

@@ -1,6 +1,6 @@
 package com.builtbroken.grappling.network.packets;
 
-import com.builtbroken.grappling.content.MovementHandler;
+import com.builtbroken.grappling.GrapplingHookMod;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 
@@ -49,35 +49,6 @@ public class PacketMouseClick extends Packet
     @Override
     public void handleServerSide(EntityPlayer player)
     {
-        //player.addChatComponentMessage(new ChatComponentText("MouseButton: " + button + "  pressed: " + state + "  wheel: " + dwheel));
-        if (button == 0)
-        {
-            if (MovementHandler.hasHook(player))
-            {
-                if (state)
-                {
-                    MovementHandler.pullHook(player, 120);
-                }
-                else
-                {
-                    MovementHandler.stopMovement(player);
-                }
-            }
-            else if (!state)
-            {
-                MovementHandler.createHook(player);
-            }
-        }
-        else if (button == 1)
-        {
-            if (MovementHandler.hasHook(player) && !state)
-            {
-                MovementHandler.clearHook(player);
-            }
-        }
-        else
-        {
-            MovementHandler.pullHook(player, dwheel);
-        }
+        GrapplingHookMod.proxy.handleMouseInput(player, button, state, dwheel);
     }
 }

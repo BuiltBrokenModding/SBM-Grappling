@@ -52,14 +52,6 @@ public class MovementHandler
         return hasHook(player) && playerToHook.get(player).movement != 0;
     }
 
-    public static void stopMovement(EntityPlayer player)
-    {
-        if (hasHook(player))
-        {
-            playerToHook.get(player).movement = 0;
-        }
-    }
-
     /**
      * Called to create a new hook from the player's aim position
      *
@@ -105,11 +97,12 @@ public class MovementHandler
         final Vec3 aim = getAim(yaw, pitch);
 
         //Find our hand Vec3ition so to Vec3ition starting point near barrel of the gun
-        float rotationHand = MathHelper.wrapAngleTo180_float(player.renderYawOffset + 90);
+        final float rotationHand = MathHelper.wrapAngleTo180_float(player.renderYawOffset + 90);
+        final double r = Math.toRadians(rotationHand);
         final Vec3 hand = Vec3.createVectorHelper(
-                (Math.cos(Math.toRadians(rotationHand)) - Math.sin(Math.toRadians(rotationHand))) * 0.5,
+                (Math.cos(r) - Math.sin(r)) * 0.5,
                 0,
-                (Math.sin(Math.toRadians(rotationHand)) + Math.cos(Math.toRadians(rotationHand)) * 0.5)
+                (Math.sin(r) + Math.cos(r)) * 0.5
         );
 
         final Vec3 entityVec3 = Vec3.createVectorHelper(player.posX + hand.xCoord, player.posY + 1.1 + hand.yCoord, player.posZ + hand.zCoord);

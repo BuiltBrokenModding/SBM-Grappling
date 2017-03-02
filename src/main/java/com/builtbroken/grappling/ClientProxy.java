@@ -2,8 +2,11 @@ package com.builtbroken.grappling;
 
 import com.builtbroken.grappling.client.ClientHookHandler;
 import com.builtbroken.grappling.client.ClientKeyHandler;
+import com.builtbroken.grappling.client.ItemHookRenderer;
 import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
 
 /**
@@ -27,11 +30,22 @@ public class ClientProxy extends CommonProxy
     {
         registerOnBus(new ClientKeyHandler());
         registerOnBus(new ClientHookHandler());
+        MinecraftForgeClient.registerItemRenderer(GrapplingHookMod.itemHook, new ItemHookRenderer());
     }
 
     private void registerOnBus(Object object)
     {
         MinecraftForge.EVENT_BUS.register(object);
         FMLCommonHandler.instance().bus().register(object);
+    }
+
+    @Override
+    protected void pullHook(EntityPlayer player, int movement)
+    {
+        super.pullHook(player, movement);
+        if (ClientHookHandler.hook != null)
+        {
+            ClientHookHandler.hook.movement = movement;
+        }
     }
 }

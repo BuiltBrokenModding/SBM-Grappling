@@ -3,7 +3,6 @@ package com.builtbroken.grappling.client;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.Tessellator;
@@ -28,11 +27,6 @@ public class FxRope extends EntityFX
     private float prevYaw = 0.0F;
     private float prevPitch = 0.0F;
     private double target_x, target_y, target_z;
-    private float endModifier = 1.0F;
-    public boolean reverse = false;
-    public boolean pulse = false;
-    private int rotationSpeed = 20;
-    private float prevSize = 0.0F;
 
     public FxRope(World par1World, double x, double y, double z, double target_x, double target_y, double target_z, int age)
     {
@@ -87,24 +81,17 @@ public class FxRope extends EntityFX
         float yd = (float) (this.posY - target_y);
         float zd = (float) (this.posZ - target_z);
 
-        this.length = MathHelper.sqrt_float(xd * xd + yd * yd + zd * zd);
+        this.length = MathHelper.sqrt_float(xd * xd + yd * yd + zd * zd) + 1;
 
         double var7 = MathHelper.sqrt_double(xd * xd + zd * zd);
 
-        this.rotYaw = ((float) (Math.atan2(xd, zd) * 180.0D / 3.141592653589793D));
-        this.rotPitch = ((float) (Math.atan2(yd, var7) * 180.0D / 3.141592653589793D));
+        this.rotYaw = ((float) (Math.atan2(xd, zd) * 180.0D / Math.PI));
+        this.rotPitch = ((float) (Math.atan2(yd, var7) * 180.0D / Math.PI));
 
         if (this.particleAge++ >= this.particleMaxAge)
         {
             setDead();
         }
-    }
-
-    public void setRGB(float r, float g, float b)
-    {
-        this.particleRed = r;
-        this.particleGreen = g;
-        this.particleBlue = b;
     }
 
     @Override
@@ -113,14 +100,7 @@ public class FxRope extends EntityFX
         tessellator.draw();
         GL11.glPushMatrix();
 
-        float size = 1.0F;
-
         FMLClientHandler.instance().getClient().renderEngine.bindTexture(TEXTURE);
-
-
-        GL11.glEnable(3042);
-        GL11.glBlendFunc(770, 1);
-        GL11.glDepthMask(false);
 
         //Calculate start position from player for rendering
         float xx = (float) (this.prevPosX + (this.posX - this.prevPosX) * f - interpPosX);
@@ -135,151 +115,102 @@ public class FxRope extends EntityFX
         GL11.glRotatef(180.0F + ry, 0.0F, 0.0F, -1.0F);
         GL11.glRotatef(rp, 1.0F, 0.0F, 0.0F);
 
-        renderRope(tessellator, size, 0);
+        renderRope(tessellator, 0.04D);
 
         GL11.glPopMatrix();
 
         tessellator.startDrawingQuads();
-        this.prevSize = size;
 
         FMLClientHandler.instance().getClient().renderEngine.bindTexture(PARTICLE_RESOURCE);
     }
 
-    public void renderRope(Tessellator tessellator, double size, float var12)
+    public void renderRope(Tessellator tessellator, double size)
     {
-        final double renderSize = 0.08D;
-
-        double var44 = -renderSize * size;
-        double var17 = renderSize * size;
-
-        int count = MathHelper.floor_double(this.length / renderSize);
+        int count = MathHelper.floor_double(this.length / size);
 
         double position = 0;
-
+        tessellator.startDrawingQuads();
         for (int i = 0; i < count; i++)
         {
             if (i % 2 == 0)
             {
-                double start = position;
-                position += renderSize;
-
+                position += size;
+                tessellator.setColorOpaque_F(this.particleRed, this.particleGreen, this.particleBlue);
                 //Bottom
-                tessellator.startDrawingQuads();
-                tessellator.setNormal(0.0F, -1.0F, 0.0F);
-                tessellator.setColorOpaque_F(this.particleRed, this.particleGreen, this.particleBlue);
-                tessellator.addVertexWithUV(var44, position, 0.0D, 1, 1);
-                tessellator.addVertexWithUV(var44, start, 0.0D, 1, 0);
-                tessellator.addVertexWithUV(var17, start, 0.0D, 0, 0);
-                tessellator.addVertexWithUV(var17, position, 0.0D, 0, 1);
-                tessellator.draw();
-
-                //TOP
-                tessellator.startDrawingQuads();
-
-                tessellator.setColorOpaque_F(this.particleRed, this.particleGreen, this.particleBlue);
-                tessellator.addVertexWithUV(var44, position, 0.0D, 0, 1);
-                tessellator.addVertexWithUV(var44, start, 0.0D, 1, 0);
-                tessellator.addVertexWithUV(var17, start, 0.0D, 0, 1);
-                tessellator.addVertexWithUV(var17, position, 0.0D, 0, 1);
-                tessellator.draw();
+                renderFace(0, position, 0, size, size, size, 2);
+                renderFace(0, position, 0, size, size, size, 3);
+                renderFace(0, position, 0, size, size, size, 4);
+                renderFace(0, position, 0, size, size, size, 5);
             }
         }
+        tessellator.draw();
     }
 
-    public void renderFace(double x, double y, double z, double width, double length, int side)
+    public void renderFace(double x, double y, double z, double size_x, double size_y, double size_z, int side)
     {
-        Tessellator tessellator = Tessellator.instance;
+        final Tessellator tessellator = Tessellator.instance;
 
-        double renderMinX = 0;
-        double renderMaxX = 1;
-        double renderMinZ = 0;
-        double renderMaxZ = 1;
+        final double minX = x - size_x;
+        final double maxX = x + size_x;
+        final double minY = y - size_y;
+        final double maxY = y + size_y;
+        final double minZ = z - size_z;
+        final double maxZ = z + size_z;
 
-        double minX = x;
-        double maxX = x;
-
-        double minY = y;
-        double maxY = y;
-
-        double minZ = z;
-        double maxZ = z;
-
-        switch (side)
+        //Down or bottom
+        if (side == 0)
         {
-            case 0:
-                tessellator.setNormal(0.0F, -1.0F, 0.0F);
-            case 1:
-                tessellator.setNormal(0.0F, 1.0F, 0.0F);
-            case 2:
-            case 3:
-            case 4:
-            case 5:
+            //Y Neg
+            tessellator.addVertexWithUV(minX, minY, maxZ, 0, 1);
+            tessellator.addVertexWithUV(minX, minY, minZ, 0, 0);
+            tessellator.addVertexWithUV(maxX, minY, minZ, 1, 0);
+            tessellator.addVertexWithUV(maxX, minY, maxZ, 1, 1);
+        }
+        //Up or top
+        else if (side == 1)
+        {
+            //Y pos
+            tessellator.addVertexWithUV(minX, maxY, maxZ,  1,  1);
+            tessellator.addVertexWithUV(minX, maxY, minZ,  1,  0);
+            tessellator.addVertexWithUV(maxX, maxY, minZ,  0,  0);
+            tessellator.addVertexWithUV(maxX, maxY, maxZ,  0,  1);
+        }
+        //North
+        else if (side == 2)
+        {
+            //Z neg
+            tessellator.addVertexWithUV(minX, maxY, minZ,  1,  0);
+            tessellator.addVertexWithUV(maxX, maxY, minZ,  0,  0);
+            tessellator.addVertexWithUV(maxX, minY, minZ,  0,  1);
+            tessellator.addVertexWithUV(minX, minY, minZ,  1,  1);
+        }
+        //South
+        else if (side == 3)
+        {
+            // Z pos
+            tessellator.addVertexWithUV(minX, maxY, maxZ,  0,  0);
+            tessellator.addVertexWithUV(minX, minY, maxZ,  0,  1);
+            tessellator.addVertexWithUV(maxX, minY, maxZ,  1,  1);
+            tessellator.addVertexWithUV(maxX, maxY, maxZ,  1,  0);
         }
 
-        tessellator.addVertexWithUV(minX, minY, maxZ, renderMinX, renderMaxZ);
-        tessellator.addVertexWithUV(minX, minY, minZ, renderMinX, renderMinZ);
-        tessellator.addVertexWithUV(maxX, minY, minZ, renderMaxX, renderMinZ);
-        tessellator.addVertexWithUV(maxX, minY, maxZ, renderMaxX, renderMaxZ);
-    }
-
-    public void renderFaceYNeg(Block p_147768_1_, double p_147768_2_, double p_147768_4_, double p_147768_6_, double size_x, double size_y, double size_z)
-    {
-        Tessellator tessellator = Tessellator.instance;
-
-        double d3 = 0;
-        double d4 = 1;
-        double d5 = 0;
-        double d6 = 1;
-
-        double d7 = d4;
-        double d8 = d3;
-        double d9 = d5;
-        double d10 = d6;
-
-        double minX = p_147768_2_ - size_x;
-        double maxX = p_147768_2_ + size_x;
-
-        double minZ = p_147768_6_ - size_z;
-        double maxZ = p_147768_6_ + size_z;
-
-        double minY = p_147768_4_ - size_y;
-        double maxY = p_147768_4_ + size_y;
-
-        //Y Neg
-        tessellator.addVertexWithUV(minX, minY, maxZ, d8, d10);
-        tessellator.addVertexWithUV(minX, minY, minZ, d3, d5);
-        tessellator.addVertexWithUV(maxX, minY, minZ, d7, d9);
-        tessellator.addVertexWithUV(maxX, minY, maxZ, d4, d6);
-
-        //Y pos
-        tessellator.addVertexWithUV(minX, maxY, maxZ, d4, d6);
-        tessellator.addVertexWithUV(minX, maxY, minZ, d7, d9);
-        tessellator.addVertexWithUV(maxX, maxY, minZ, d3, d5);
-        tessellator.addVertexWithUV(maxX, maxY, maxZ, d8, d10);
-
-        //Z neg
-        tessellator.addVertexWithUV(minX, maxY, minZ, d7, d9);
-        tessellator.addVertexWithUV(maxX, maxY, minZ, d3, d5);
-        tessellator.addVertexWithUV(maxX, minY, minZ, d8, d10);
-        tessellator.addVertexWithUV(minX, minY, minZ, d4, d6);
-
-        // Z pos
-        tessellator.addVertexWithUV(minX, maxY, maxZ, d3, d5);
-        tessellator.addVertexWithUV(minX, minY, maxZ, d8, d10);
-        tessellator.addVertexWithUV(maxX, minY, maxZ, d4, d6);
-        tessellator.addVertexWithUV(maxX, maxY, maxZ, d7, d9);
-
-        //X pos
-        tessellator.addVertexWithUV(maxX, minY, maxZ, d8, d10);
-        tessellator.addVertexWithUV(maxX, minY, minZ, d4, d6);
-        tessellator.addVertexWithUV(maxX, maxY, minZ, d7, d9);
-        tessellator.addVertexWithUV(maxX, maxY, maxZ, d3, d5);
-
-        //X neg
-        tessellator.addVertexWithUV(minX, maxY, maxZ, d7, d9);
-        tessellator.addVertexWithUV(minX, maxY, minZ, d3, d5);
-        tessellator.addVertexWithUV(minX, minY, minZ, d8, d10);
-        tessellator.addVertexWithUV(minX, minY, maxZ, d4, d6);
-
+        //West
+        else if (side == 4)
+        {
+            //X neg
+            tessellator.addVertexWithUV(minX, maxY, maxZ,  1,  0);
+            tessellator.addVertexWithUV(minX, maxY, minZ,  0,  0);
+            tessellator.addVertexWithUV(minX, minY, minZ,  0,  1);
+            tessellator.addVertexWithUV(minX, minY, maxZ,  1,  1);
+        }
+        //East
+        else if (side == 5)
+        {
+            //X pos
+            tessellator.addVertexWithUV(maxX, minY, maxZ,  0,  1);
+            tessellator.addVertexWithUV(maxX, minY, minZ,  1,  1);
+            tessellator.addVertexWithUV(maxX, maxY, minZ,  1,  0);
+            tessellator.addVertexWithUV(maxX, maxY, maxZ,  0,  0);
+        }
     }
 }
