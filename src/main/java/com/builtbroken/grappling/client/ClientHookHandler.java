@@ -1,6 +1,5 @@
 package com.builtbroken.grappling.client;
 
-import com.builtbroken.grappling.GrapplingHookMod;
 import com.builtbroken.grappling.content.Hook;
 import com.builtbroken.grappling.content.MovementHandler;
 import cpw.mods.fml.client.FMLClientHandler;
@@ -42,26 +41,32 @@ public class ClientHookHandler
             double distance = Math.sqrt(xDifference * xDifference + yDifference * yDifference + zDifference * zDifference);
 
             //Stop motion if outside of max distance
-            if (distance > hook.distance)
+            if (Math.abs(xDifference) >= hook.distance || hook.movement != 0)
             {
                 player.motionX = 0;
+            }
+            if (Math.abs(yDifference) >= hook.distance || hook.movement != 0)
+            {
                 player.motionY = 0;
+            }
+            if (Math.abs(zDifference) >= hook.distance || hook.movement != 0)
+            {
                 player.motionZ = 0;
             }
-
+            //Reset motion so we fall / move
             if (!player.onGround && hook.movement == 0)
             {
-                //Reset motion so we fall / move
-
                 //If we are not bellow the point we need to add motion
-                if (Math.abs(xDifference) > 0.01 || Math.abs(zDifference) > 0.01)
+                //TODO adjust pull motion by distance to reduce jerking motion
+                //TODO add moment along a curve to improve visual affect
+                Vec3 motion = MovementHandler.getPullDirection(hook, player);
+                if (Math.abs(player.motionX) < 0.1)
                 {
-                    //TODO adjust pull motion by distance to reduce jerking motion
-                    //TODO add moment along a curve to improve visual affect
-                    Vec3 motion = MovementHandler.getPullDirection(hook, player);
-
-                    player.motionX = motion.xCoord * GrapplingHookMod.HOOK_PULL_PERCENT;
-                    player.motionZ = motion.zCoord * GrapplingHookMod.HOOK_PULL_PERCENT;
+                    player.motionX = motion.xCoord;
+                }
+                if (Math.abs(player.motionZ) < 0.1)
+                {
+                    player.motionZ = motion.zCoord;
                 }
 
                 //Add gravity if we are above the point

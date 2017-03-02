@@ -13,7 +13,6 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.WorldServer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -214,7 +213,7 @@ public class MovementHandler
                     }
                     else if (entry.getValue().movement < 0)
                     {
-                        hook.distance += 1.0 / 20.0;
+                        hook.distance += 0.2D;
                     }
                 }
             }
@@ -267,8 +266,6 @@ public class MovementHandler
      */
     public static void handleMotionLimits(EntityPlayer player, Hook hook)
     {
-        player.addChatComponentMessage(new ChatComponentText("Distance: " + hook.distance + "  Server: " + (player.worldObj instanceof WorldServer)));
-
         //Check to see if we are outside the max distance
         double distance = Math.max(getDistanceToHook(hook, player), 2);
         double delta = Math.abs(distance - hook.distance);
