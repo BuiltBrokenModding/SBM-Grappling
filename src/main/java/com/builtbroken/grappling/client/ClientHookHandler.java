@@ -2,7 +2,6 @@ package com.builtbroken.grappling.client;
 
 import com.builtbroken.grappling.content.Hook;
 import com.builtbroken.grappling.content.MovementHandler;
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.client.Minecraft;
@@ -41,7 +40,7 @@ public class ClientHookHandler
             double yDifference = hook.y - player.posY;
             double zDifference = hook.z - player.posZ;
 
-            if(hook.movement != 0)
+            if (hook.movement != 0)
             {
                 player.motionX = 0;
                 player.motionY = 0;
@@ -66,19 +65,9 @@ public class ClientHookHandler
             }
 
             //Reset motion so we fall / move
-            if (!player.onGround && hook.movement == 0 && distance > 2)
+            if (!player.onGround && hook.movement == 0 && (Math.abs(xDifference) > .1 || Math.abs(zDifference) > .1))
             {
                 pullTowardsLowestPoint(player, hook);
-            }
-
-            if (event.phase == TickEvent.Phase.END)
-            {
-                FxRope rope = new FxRope(event.player.worldObj,
-                        player.posX,
-                        player.posY - 0.8,
-                        player.posZ,
-                        hook.x, hook.y, hook.z, 1);
-                FMLClientHandler.instance().getClient().effectRenderer.addEffect(rope);
             }
         }
     }
@@ -101,7 +90,7 @@ public class ClientHookHandler
         double zNormalized = zDifference / distance;
 
         //Create pull
-        Vec3 pull = Vec3.createVectorHelper(xNormalized * 0.05, yNormalized * 0.05, zNormalized * 0.05);
+        Vec3 pull = Vec3.createVectorHelper(xNormalized * 0.02, yNormalized * 0.02, zNormalized * 0.02);
 
         //Apply acceleration to player
         player.motionX += pull.xCoord;

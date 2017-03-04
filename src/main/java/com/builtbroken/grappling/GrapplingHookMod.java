@@ -13,9 +13,16 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.File;
 
 /**
  * Main mod class
@@ -62,6 +69,13 @@ public class GrapplingHookMod
         GameRegistry.registerItem(itemHook, "sbmGrapplingHook");
 
         proxy.preInit();
+
+        Configuration configuration = new Configuration(new File(event.getModConfigurationDirectory(), "bbm/Grappling_Hook.cfg"));
+        configuration.load();
+        HOOK_REACH_DISTANCE = configuration.getInt("reach_distance", Configuration.CATEGORY_GENERAL, HOOK_REACH_DISTANCE, 10, 300, "Max distance that the grappling hook can fire.");
+        HOOK_LIFE_TIME = configuration.getInt("life_timer", Configuration.CATEGORY_GENERAL, HOOK_LIFE_TIME, -1, 90000, "Time in ticks that the hook can be activated for, 20 ticks = 1 second if server is running at 50ms a tick.");
+        HOOK_PULL_PERCENT = configuration.getFloat("speed", Configuration.CATEGORY_GENERAL, HOOK_PULL_PERCENT, 0, 4, "Percentage of speed to modify the default hook speed, this is a min and max cap on the speed.");
+        configuration.save();
     }
 
     private void registerOnBus(Object object)
@@ -74,13 +88,12 @@ public class GrapplingHookMod
     public void init(FMLInitializationEvent event)
     {
         packetHandler = new PacketManager("smbgrapplinghook");
-
         EntityRegistry.registerModEntity(EntityHook.class, "smbEntityHook", 50, this, 100, 15, true);
     }
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event)
     {
-        //TODO implement recipe
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemHook, 1, 0), " B ", "ISI", "IRI", 'B', Blocks.iron_bars, 'I', Items.iron_ingot, 'S', Items.string, 'R', Items.redstone));
     }
 }

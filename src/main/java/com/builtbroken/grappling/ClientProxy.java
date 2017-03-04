@@ -2,7 +2,10 @@ package com.builtbroken.grappling;
 
 import com.builtbroken.grappling.client.ClientHookHandler;
 import com.builtbroken.grappling.client.ClientKeyHandler;
-import com.builtbroken.grappling.client.ItemHookRenderer;
+import com.builtbroken.grappling.client.render.RenderHook;
+import com.builtbroken.grappling.client.render.ItemHookRenderer;
+import com.builtbroken.grappling.content.entity.EntityHook;
+import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -31,6 +34,7 @@ public class ClientProxy extends CommonProxy
         registerOnBus(new ClientKeyHandler());
         registerOnBus(new ClientHookHandler());
         MinecraftForgeClient.registerItemRenderer(GrapplingHookMod.itemHook, new ItemHookRenderer());
+        RenderingRegistry.registerEntityRenderingHandler(EntityHook.class, new RenderHook());
     }
 
     private void registerOnBus(Object object)
