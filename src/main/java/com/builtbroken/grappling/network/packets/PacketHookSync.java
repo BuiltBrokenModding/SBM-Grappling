@@ -22,7 +22,10 @@ public class PacketHookSync extends Packet
     public void write(ByteBuf buffer)
     {
         buffer.writeBoolean(playerHook != null);
-        playerHook.write(buffer);
+        if(playerHook != null)
+        {
+            playerHook.write(buffer);
+        }
     }
 
     @Override
@@ -31,6 +34,10 @@ public class PacketHookSync extends Packet
         if (buffer.readBoolean())
         {
             playerHook = Hook.read(buffer);
+        }
+        else
+        {
+            playerHook = null;
         }
     }
 

@@ -266,81 +266,30 @@ public class MovementHandler
      */
     public static void handleMotionLimits(EntityPlayer player, Hook hook)
     {
-        //Check to see if we are outside the max distance
-        double distance = Math.max(getDistanceToHook(hook, player), 2);
-        double delta = Math.abs(distance - hook.distance);
-        float percent = (float) Math.abs(delta / hook.distance);
-        if (percent > .95 && distance > 3)
-        {
-            double backupX = player.posX;
-            double backupY = player.posY;
-            double backupZ = player.posZ;
-            try
-            {
-                //If we are outside the max reset position
-                Vec3 pull = getPullDirection(hook, player);
-                pull = Vec3.createVectorHelper(pull.xCoord * percent, pull.yCoord * percent, pull.zCoord * percent);
-                player.moveEntity(pull.xCoord, pull.yCoord, pull.zCoord);
-                player.setPositionAndUpdate(player.posX, player.posY, player.posZ);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-                player.setPositionAndUpdate(backupX, backupY, backupZ);
-            }
-        }
-
-        //Get distance from center point in each directon
-        double xDifference = hook.x - player.posX;
-        double yDifference = hook.y - player.posY;
-        double zDifference = hook.z - player.posZ;
-
-        //Get percentage distance
-        double percentX = Math.abs(xDifference) / distance;
-        double percentY = Math.abs(yDifference) / distance;
-        double percentZ = Math.abs(zDifference) / distance;
-
-        if (percentY > 0.95)
-        {
-            if (yDifference > 0)
-            {
-                //Turn off gravity
-                if (player.motionY < 0.15)
-                {
-                    player.motionY = 0.15D;
-                }
-            }
-            //Disable upward motion when at limit
-            else if (player.motionY > 0)
-            {
-                //TODO redirect energy if its great than a pre set value
-                player.motionY = 0;
-            }
-        }
-        if (percentX > 0.95)
-        {
-            if (xDifference > 0)
-            {
-                player.addChatComponentMessage(new ChatComponentText("At x position limit"));
-            }
-            else
-            {
-                player.addChatComponentMessage(new ChatComponentText("At x negative limit"));
-            }
-        }
-
-        if (percentZ > 0.95)
-        {
-            if (zDifference > 0)
-            {
-                player.addChatComponentMessage(new ChatComponentText("At z position limit"));
-            }
-            else
-            {
-                player.addChatComponentMessage(new ChatComponentText("At z negative limit"));
-            }
-        }
     }
+
+
+    public Vec3 getGravity(EntityPlayer player, Hook hook)
+    {
+        final Vec3 desiredPosition = Vec3.createVectorHelper(hook.x, hook.y - hook.distance, hook.z);
+
+        //Get difference in positions
+        double xDifference = desiredPosition.xCoord - player.posX;
+        double yDifference = desiredPosition.yCoord - player.posY;
+        double zDifference = desiredPosition.zCoord - player.posZ;
+
+        //Get distance
+        double distance = Math.sqrt(xDifference * xDifference + yDifference * yDifference + zDifference * zDifference);
+
+        //Normalize
+        double xNormalized = xDifference / distance;
+        double yNormalized = yDifference / distance;
+        double zNormalized = zDifference / distance;
+
+        //Create pull
+        return Vec3.createVectorHelper(xNormalized * 0.05, yNormalized * 0.05, zNormalized * 0.05);
+    }
+
 
 
     /**

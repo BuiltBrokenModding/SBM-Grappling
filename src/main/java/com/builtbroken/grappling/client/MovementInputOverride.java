@@ -32,14 +32,14 @@ public class MovementInputOverride extends MovementInputFromOptions
     public void updatePlayerMoveState()
     {
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-        if (player.onGround)
-        {
-            super.updatePlayerMoveState();
-        }
-        else if (ClientHookHandler.hook == null)
+        if (ClientHookHandler.hook == null)
         {
             original.updatePlayerMoveState();
             player.movementInput = original;
+        }
+        else if (player.onGround)
+        {
+            super.updatePlayerMoveState();
         }
         else
         {
