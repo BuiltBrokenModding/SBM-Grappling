@@ -8,9 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.event.MouseEvent;
-import org.lwjgl.input.Keyboard;
 
 /**
  * Handles overriding key bindings to control movement while using a hook
@@ -43,8 +41,6 @@ public class ClientKeyHandler
     @SubscribeEvent
     public void keyHandler(InputEvent.KeyInputEvent e)
     {
-        int key = Keyboard.getEventKey();
-        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-        player.addChatComponentMessage(new ChatComponentText("Key: " + key));
+
     }
 }

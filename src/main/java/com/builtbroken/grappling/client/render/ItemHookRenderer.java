@@ -1,6 +1,9 @@
-package com.builtbroken.grappling.client;
+package com.builtbroken.grappling.client.render;
 
+import com.builtbroken.grappling.client.ClientHookHandler;
 import cpw.mods.fml.client.FMLClientHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.IItemRenderer;
@@ -37,6 +40,13 @@ public class ItemHookRenderer implements IItemRenderer
 
         FMLClientHandler.instance().getClient().renderEngine.bindTexture(TEXTURE);
 
+        Entity entity = null;
+
+        if(data != null && data.length >= 2 && data[1] instanceof Entity)
+        {
+            entity = (Entity) data[1];
+        }
+
         if (type == ItemRenderType.EQUIPPED)
         {
             //TODO have rotation match aiming point
@@ -46,6 +56,21 @@ public class ItemHookRenderer implements IItemRenderer
 
             final float scale = 0.0625f / 3;
             GL11.glScalef(scale, scale, scale);
+            if(entity != null && entity == Minecraft.getMinecraft().thePlayer)
+            {
+                if(ClientHookHandler.hook != null)
+                {
+                    MODEL.renderAllExcept("group5", "Component_20");
+                }
+                else
+                {
+                    MODEL.renderAll();
+                }
+            }
+            else
+            {
+                MODEL.renderAll();
+            }
         }
         else if (type == ItemRenderType.EQUIPPED_FIRST_PERSON)
         {
@@ -55,6 +80,14 @@ public class ItemHookRenderer implements IItemRenderer
 
             final float scale = 0.0625f / 3;
             GL11.glScalef(scale, scale, scale);
+            if(ClientHookHandler.hook != null)
+            {
+                MODEL.renderAllExcept("group5", "Component_20");
+            }
+            else
+            {
+                MODEL.renderAll();
+            }
         }
         else if (type == ItemRenderType.ENTITY)
         {
@@ -62,9 +95,10 @@ public class ItemHookRenderer implements IItemRenderer
 
             final float scale = 0.0625f / 3;
             GL11.glScalef(scale, scale, scale);
+            MODEL.renderAll();
         }
 
-        MODEL.renderAll();
+
 
         GL11.glPopMatrix();
     }

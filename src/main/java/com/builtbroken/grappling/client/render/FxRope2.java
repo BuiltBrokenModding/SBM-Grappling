@@ -1,4 +1,4 @@
-package com.builtbroken.grappling.client;
+package com.builtbroken.grappling.client.render;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -6,6 +6,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
@@ -16,7 +17,7 @@ import org.lwjgl.opengl.GL11;
  * Copy of the FXBeam from Voltz Engine modified to look like a rope
  */
 @SideOnly(Side.CLIENT)
-public class FxRope extends EntityFX
+public class FxRope2 extends EntityFX
 {
     public static final ResourceLocation PARTICLE_RESOURCE = new ResourceLocation("textures/particle/particles.png");
     public static final ResourceLocation TEXTURE = new ResourceLocation("smbgrapplinghook", "textures/rope.png");
@@ -26,9 +27,9 @@ public class FxRope extends EntityFX
     private float rotPitch = 0.0F;
     private float prevYaw = 0.0F;
     private float prevPitch = 0.0F;
-    private double target_x, target_y, target_z;
+    private Entity target;
 
-    public FxRope(World par1World, double x, double y, double z, double target_x, double target_y, double target_z, int age)
+    public FxRope2(World par1World, double x, double y, double z, Entity entity, int age)
     {
         super(par1World, x, y, z, 0.0D, 0.0D, 0.0D);
 
@@ -37,12 +38,10 @@ public class FxRope extends EntityFX
         this.motionX = 0.0D;
         this.motionY = 0.0D;
         this.motionZ = 0.0D;
-        this.target_x = target_x;
-        this.target_y = target_y;
-        this.target_z = target_z;
-        float xd = (float) (this.posX - target_x);
-        float yd = (float) (this.posY - target_y);
-        float zd = (float) (this.posZ - target_z);
+        this.target = entity;
+        float xd = (float) (this.posX - target.posX);
+        float yd = (float) (this.posY - target.posY  + 0.4); //TODO add method to get height offset
+        float zd = (float) (this.posZ - target.posZ);
         this.length = MathHelper.sqrt_float(xd * xd + yd * yd + zd * zd);
         double var7 = MathHelper.sqrt_double(xd * xd + zd * zd);
         this.rotYaw = ((float) (Math.atan2(xd, zd) * 180.0D / 3.141592653589793D));
@@ -77,11 +76,11 @@ public class FxRope extends EntityFX
         this.prevYaw = this.rotYaw;
         this.prevPitch = this.rotPitch;
 
-        float xd = (float) (this.posX - target_x);
-        float yd = (float) (this.posY - target_y);
-        float zd = (float) (this.posZ - target_z);
+        float xd = (float) (this.posX - target.posX);
+        float yd = (float) (this.posY - target.posY + 0.4); //TODO add method to get height offset
+        float zd = (float) (this.posZ - target.posZ);
 
-        this.length = MathHelper.sqrt_float(xd * xd + yd * yd + zd * zd) + 1;
+        this.length = MathHelper.sqrt_float(xd * xd + yd * yd + zd * zd);
 
         double var7 = MathHelper.sqrt_double(xd * xd + zd * zd);
 
@@ -132,16 +131,13 @@ public class FxRope extends EntityFX
         tessellator.startDrawingQuads();
         for (int i = 0; i < count; i++)
         {
-            if (i % 2 == 0)
-            {
-                position += size;
-                tessellator.setColorOpaque_F(this.particleRed, this.particleGreen, this.particleBlue);
-                //Bottom
-                renderFace(0, position, 0, size, size, size, 2);
-                renderFace(0, position, 0, size, size, size, 3);
-                renderFace(0, position, 0, size, size, size, 4);
-                renderFace(0, position, 0, size, size, size, 5);
-            }
+            position += size;
+            tessellator.setColorOpaque_F(this.particleRed, this.particleGreen, this.particleBlue);
+            //Bottom
+            renderFace(0, position, 0, size, size, size, 2);
+            renderFace(0, position, 0, size, size, size, 3);
+            renderFace(0, position, 0, size, size, size, 4);
+            renderFace(0, position, 0, size, size, size, 5);
         }
         tessellator.draw();
     }
@@ -170,47 +166,47 @@ public class FxRope extends EntityFX
         else if (side == 1)
         {
             //Y pos
-            tessellator.addVertexWithUV(minX, maxY, maxZ,  1,  1);
-            tessellator.addVertexWithUV(minX, maxY, minZ,  1,  0);
-            tessellator.addVertexWithUV(maxX, maxY, minZ,  0,  0);
-            tessellator.addVertexWithUV(maxX, maxY, maxZ,  0,  1);
+            tessellator.addVertexWithUV(minX, maxY, maxZ, 1, 1);
+            tessellator.addVertexWithUV(minX, maxY, minZ, 1, 0);
+            tessellator.addVertexWithUV(maxX, maxY, minZ, 0, 0);
+            tessellator.addVertexWithUV(maxX, maxY, maxZ, 0, 1);
         }
         //North
         else if (side == 2)
         {
             //Z neg
-            tessellator.addVertexWithUV(minX, maxY, minZ,  1,  0);
-            tessellator.addVertexWithUV(maxX, maxY, minZ,  0,  0);
-            tessellator.addVertexWithUV(maxX, minY, minZ,  0,  1);
-            tessellator.addVertexWithUV(minX, minY, minZ,  1,  1);
+            tessellator.addVertexWithUV(minX, maxY, minZ, 1, 0);
+            tessellator.addVertexWithUV(maxX, maxY, minZ, 0, 0);
+            tessellator.addVertexWithUV(maxX, minY, minZ, 0, 1);
+            tessellator.addVertexWithUV(minX, minY, minZ, 1, 1);
         }
         //South
         else if (side == 3)
         {
             // Z pos
-            tessellator.addVertexWithUV(minX, maxY, maxZ,  0,  0);
-            tessellator.addVertexWithUV(minX, minY, maxZ,  0,  1);
-            tessellator.addVertexWithUV(maxX, minY, maxZ,  1,  1);
-            tessellator.addVertexWithUV(maxX, maxY, maxZ,  1,  0);
+            tessellator.addVertexWithUV(minX, maxY, maxZ, 0, 0);
+            tessellator.addVertexWithUV(minX, minY, maxZ, 0, 1);
+            tessellator.addVertexWithUV(maxX, minY, maxZ, 1, 1);
+            tessellator.addVertexWithUV(maxX, maxY, maxZ, 1, 0);
         }
 
         //West
         else if (side == 4)
         {
             //X neg
-            tessellator.addVertexWithUV(minX, maxY, maxZ,  1,  0);
-            tessellator.addVertexWithUV(minX, maxY, minZ,  0,  0);
-            tessellator.addVertexWithUV(minX, minY, minZ,  0,  1);
-            tessellator.addVertexWithUV(minX, minY, maxZ,  1,  1);
+            tessellator.addVertexWithUV(minX, maxY, maxZ, 1, 0);
+            tessellator.addVertexWithUV(minX, maxY, minZ, 0, 0);
+            tessellator.addVertexWithUV(minX, minY, minZ, 0, 1);
+            tessellator.addVertexWithUV(minX, minY, maxZ, 1, 1);
         }
         //East
         else if (side == 5)
         {
             //X pos
-            tessellator.addVertexWithUV(maxX, minY, maxZ,  0,  1);
-            tessellator.addVertexWithUV(maxX, minY, minZ,  1,  1);
-            tessellator.addVertexWithUV(maxX, maxY, minZ,  1,  0);
-            tessellator.addVertexWithUV(maxX, maxY, maxZ,  0,  0);
+            tessellator.addVertexWithUV(maxX, minY, maxZ, 0, 1);
+            tessellator.addVertexWithUV(maxX, minY, minZ, 1, 1);
+            tessellator.addVertexWithUV(maxX, maxY, minZ, 1, 0);
+            tessellator.addVertexWithUV(maxX, maxY, maxZ, 0, 0);
         }
     }
 }

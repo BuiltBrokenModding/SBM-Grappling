@@ -67,6 +67,7 @@ public class MovementHandler
             hook.x = movingobjectposition.hitVec.xCoord;
             hook.y = movingobjectposition.hitVec.yCoord;
             hook.z = movingobjectposition.hitVec.zCoord;
+            hook.playerEntityID = player.getEntityId();
             hook.distance = getDistanceToHook(hook, player);
             playerToHook.put(player, hook);
 
@@ -226,17 +227,6 @@ public class MovementHandler
         }
         else
         {
-            //Update motion limits
-            for (Map.Entry<EntityPlayer, Hook> entry : playerToHook.entrySet())
-            {
-                if (entry.getKey() instanceof EntityPlayerMP)
-                {
-                    Hook hook = entry.getValue();
-                    EntityPlayerMP player = (EntityPlayerMP) entry.getKey();
-                    handleMotionLimits(player, hook);
-                }
-            }
-
             //Loop all players (this is an O(n^2) operation)
             for (Object object : MinecraftServer.getServer().getConfigurationManager().playerEntityList)
             {
@@ -256,38 +246,6 @@ public class MovementHandler
                 }
             }
         }
-    }
-
-    /**
-     * Called to handle the movement limits
-     *
-     * @param player
-     * @param hook
-     */
-    public static void handleMotionLimits(EntityPlayer player, Hook hook)
-    {
-    }
-
-
-    public Vec3 getGravity(EntityPlayer player, Hook hook)
-    {
-        final Vec3 desiredPosition = Vec3.createVectorHelper(hook.x, hook.y - hook.distance, hook.z);
-
-        //Get difference in positions
-        double xDifference = desiredPosition.xCoord - player.posX;
-        double yDifference = desiredPosition.yCoord - player.posY;
-        double zDifference = desiredPosition.zCoord - player.posZ;
-
-        //Get distance
-        double distance = Math.sqrt(xDifference * xDifference + yDifference * yDifference + zDifference * zDifference);
-
-        //Normalize
-        double xNormalized = xDifference / distance;
-        double yNormalized = yDifference / distance;
-        double zNormalized = zDifference / distance;
-
-        //Create pull
-        return Vec3.createVectorHelper(xNormalized * 0.05, yNormalized * 0.05, zNormalized * 0.05);
     }
 
 
