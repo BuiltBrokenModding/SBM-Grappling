@@ -1,6 +1,6 @@
 item.smbgrapplinghook:hook.name=Grappling Hook
 item.smbgrapplinghook:hook.info.leftClick=Left click to fire
-item.smbgrapplinghook:hook.info.leftClick-Right click to release
+item.smbgrapplinghook:hook.info.rightClick=Right click to release
 item.smbgrapplinghook:hook.info.scrollWheel=Scroll Wheel to change movement
 item.smbgrapplinghook:hook.info.leftClick2=Hold Left click to pull towards
 item.smbgrapplinghook:hook.info.leftClick3=Release left to stop movement

@@ -6,6 +6,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.StatCollector;
 
 import java.util.List;
 
@@ -38,6 +39,11 @@ public class ItemHook extends Item
 
     private String getTranslation(String key)
     {
+        String translation = StatCollector.translateToLocal(key);
+        if(translation != null && !translation.isEmpty())
+        {
+            return translation;
+        }
         return key;
     }
 }

@@ -40,7 +40,7 @@ public class FxRope2 extends EntityFX
         this.motionZ = 0.0D;
         this.target = entity;
         float xd = (float) (this.posX - target.posX);
-        float yd = (float) (this.posY - target.posY  + 0.4); //TODO add method to get height offset
+        float yd = (float) (this.posY - target.posY + 0.4); //TODO add method to get height offset
         float zd = (float) (this.posZ - target.posZ);
         this.length = MathHelper.sqrt_float(xd * xd + yd * yd + zd * zd);
         double var7 = MathHelper.sqrt_double(xd * xd + zd * zd);
@@ -96,9 +96,9 @@ public class FxRope2 extends EntityFX
     @Override
     public void renderParticle(Tessellator tessellator, float f, float f1, float f2, float f3, float f4, float f5)
     {
+        //Set
         tessellator.draw();
         GL11.glPushMatrix();
-
         FMLClientHandler.instance().getClient().renderEngine.bindTexture(TEXTURE);
 
         //Calculate start position from player for rendering
@@ -114,15 +114,23 @@ public class FxRope2 extends EntityFX
         GL11.glRotatef(180.0F + ry, 0.0F, 0.0F, -1.0F);
         GL11.glRotatef(rp, 1.0F, 0.0F, 0.0F);
 
+
+        //Call render iterator
         renderRope(tessellator, 0.04D);
 
+
+        //Reset
         GL11.glPopMatrix();
-
         tessellator.startDrawingQuads();
-
         FMLClientHandler.instance().getClient().renderEngine.bindTexture(PARTICLE_RESOURCE);
     }
 
+    /**
+     * Called to render the rope
+     *
+     * @param tessellator - tessellator to use
+     * @param size        - size of the rope
+     */
     public void renderRope(Tessellator tessellator, double size)
     {
         int count = MathHelper.floor_double(this.length / size);
@@ -142,6 +150,17 @@ public class FxRope2 extends EntityFX
         tessellator.draw();
     }
 
+    /**
+     * Called to render a standard minecraft block face
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param size_x
+     * @param size_y
+     * @param size_z
+     * @param side
+     */
     public void renderFace(double x, double y, double z, double size_x, double size_y, double size_z, int side)
     {
         final Tessellator tessellator = Tessellator.instance;
@@ -152,6 +171,10 @@ public class FxRope2 extends EntityFX
         final double maxY = y + size_y;
         final double minZ = z - size_z;
         final double maxZ = z + size_z;
+
+        //Adjust brightness to world time //TODO adjust by light level at location
+        int t = (int)Minecraft.getMinecraft().theWorld.getWorldInfo().getWorldTime();
+        tessellator.setBrightness((int) (200 * (1 - (t / 24000.0))));
 
         //Down or bottom
         if (side == 0)
