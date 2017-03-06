@@ -11,6 +11,8 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -133,6 +135,7 @@ public class FxRope2 extends EntityFX
      */
     public void renderRope(Tessellator tessellator, double size)
     {
+        //TODO make option to render solid (no segments) to improve FPS
         int count = MathHelper.floor_double(this.length / size);
 
         double position = 0;
@@ -173,8 +176,25 @@ public class FxRope2 extends EntityFX
         final double maxZ = z + size_z;
 
         //Adjust brightness to world time //TODO adjust by light level at location
-        int t = (int)Minecraft.getMinecraft().theWorld.getWorldInfo().getWorldTime();
+        int t = (int) Minecraft.getMinecraft().theWorld.getWorldInfo().getWorldTime();
         tessellator.setBrightness((int) (200 * (1 - (t / 24000.0))));
+
+        double lx = posX + x;
+        double ly = posY + y;
+        double lz = posZ + z;
+
+        //TODO add option to turn off to improve FPS
+        Chunk chunk = Minecraft.getMinecraft().theWorld.getChunkFromBlockCoords((int) Math.floor(lx), (int) Math.floor(lz));
+        if (chunk != null)
+        {
+            ExtendedBlockStorage extendedblockstorage = chunk.getBlockStorageArray()[(int) Math.floor(ly) >> 4];
+            int i1 = this.worldObj.provider.hasNoSky ? 0 : extendedblockstorage.getExtSkylightValue((int) Math.floor(lx), (int) Math.floor(ly) & 15, (int) Math.floor(lz));
+            int j1 = extendedblockstorage.getExtBlocklightValue((int) Math.floor(lx), (int) Math.floor(ly) & 15, (int) Math.floor(lz));
+            //System.out.println(i1 + "  " + j1);
+
+            float p = Math.min(j1, i1) / 15.0f;
+            tessellator.setBrightness(100 + (int) (100 * p));
+        }
 
         //Down or bottom
         if (side == 0)
