@@ -2,8 +2,8 @@ package com.builtbroken.grappling;
 
 import com.builtbroken.grappling.client.ClientHookHandler;
 import com.builtbroken.grappling.client.ClientKeyHandler;
-import com.builtbroken.grappling.client.render.RenderHook;
-import com.builtbroken.grappling.client.render.ItemHookRenderer;
+import com.builtbroken.grappling.content.entity.RenderHook;
+import com.builtbroken.grappling.content.item.ItemHookRenderer;
 import com.builtbroken.grappling.content.entity.EntityHook;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;

@@ -1,6 +1,6 @@
 package com.builtbroken.grappling.content.entity;
 
-import com.builtbroken.grappling.client.render.FxRope2;
+import com.builtbroken.grappling.client.fx.FxRope2;
 import com.builtbroken.grappling.content.Hook;
 import com.builtbroken.grappling.content.MovementHandler;
 import cpw.mods.fml.client.FMLClientHandler;

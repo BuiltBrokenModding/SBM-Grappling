@@ -1,7 +1,6 @@
-package com.builtbroken.grappling.client.render;
+package com.builtbroken.grappling.content.entity;
 
 import com.builtbroken.grappling.content.Hook;
-import com.builtbroken.grappling.content.entity.EntityHook;
 import cpw.mods.fml.client.FMLClientHandler;
 import net.minecraft.client.renderer.entity.RenderEntity;
 import net.minecraft.entity.Entity;

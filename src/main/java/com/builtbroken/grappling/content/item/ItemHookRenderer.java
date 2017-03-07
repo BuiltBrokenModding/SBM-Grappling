@@ -1,4 +1,4 @@
-package com.builtbroken.grappling.client.render;
+package com.builtbroken.grappling.content.item;
 
 import com.builtbroken.grappling.client.ClientHookHandler;
 import cpw.mods.fml.client.FMLClientHandler;
