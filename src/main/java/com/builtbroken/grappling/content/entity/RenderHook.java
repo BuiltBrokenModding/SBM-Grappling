@@ -23,6 +23,7 @@ public class RenderHook extends RenderEntity
     {
         GL11.glPushMatrix();
         GL11.glTranslatef((float)x, (float)y, (float)z);
+        GL11.glDisable(GL11.GL_LIGHTING);
 
         final float scale = 0.0625f / 3;
         GL11.glScalef(scale, scale, scale);
@@ -63,6 +64,7 @@ public class RenderHook extends RenderEntity
         }
         MODEL.renderAll();
 
+        GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
     }
 

@@ -1,6 +1,7 @@
 package com.builtbroken.grappling.client;
 
 import com.builtbroken.grappling.GrapplingHookMod;
+import com.builtbroken.grappling.client.fx.FxRope2;
 import com.builtbroken.grappling.network.packets.PacketMouseClick;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.InputEvent;
@@ -9,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.MouseEvent;
+import org.lwjgl.input.Keyboard;
 
 /**
  * Handles overriding key bindings to control movement while using a hook
@@ -18,6 +20,8 @@ import net.minecraftforge.client.event.MouseEvent;
  */
 public class ClientKeyHandler
 {
+    long lastDebugKeyHit = 0;
+
     @SubscribeEvent
     public void mouseHandler(MouseEvent e)
     {
@@ -41,6 +45,12 @@ public class ClientKeyHandler
     @SubscribeEvent
     public void keyHandler(InputEvent.KeyInputEvent e)
     {
-
+        final int key = Keyboard.getEventKey();
+        final long time = System.currentTimeMillis();
+        if (ClientHookHandler.hook != null && key == Keyboard.KEY_GRAVE && (time - lastDebugKeyHit) > 1000)
+        {
+            lastDebugKeyHit = time;
+            FxRope2.renderDebugData = !FxRope2.renderDebugData;
+        }
     }
 }

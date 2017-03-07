@@ -33,6 +33,8 @@ import java.io.File;
 @cpw.mods.fml.common.Mod(modid = "smbgrapplinghook", name = "Grappling Hook", version = GrapplingHookMod.VERSION)
 public class GrapplingHookMod
 {
+    public static final boolean runningAsDev = System.getProperty("development") != null && System.getProperty("development").equalsIgnoreCase("true");
+
     public static final String MAJOR_VERSION = "@MAJOR@";
     public static final String MINOR_VERSION = "@MINOR@";
     public static final String REVISION_VERSION = "@REVIS@";
