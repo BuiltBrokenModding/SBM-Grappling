@@ -14,7 +14,7 @@ import net.minecraft.network.NetHandlerPlayServer;
  * @since 31/05/14
  */
 @ChannelHandler.Sharable
-public class ResonantPacketHandler extends SimpleChannelInboundHandler<Packet>
+public class PacketHandler extends SimpleChannelInboundHandler<Packet>
 {
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, Packet packet) throws Exception

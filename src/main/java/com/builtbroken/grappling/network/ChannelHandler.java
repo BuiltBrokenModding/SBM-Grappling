@@ -13,11 +13,11 @@ import io.netty.channel.ChannelHandlerContext;
  * @author tgame14
  * @since 31/05/14
  */
-public class ResonantChannelHandler extends FMLIndexedMessageToMessageCodec<Packet>
+public class ChannelHandler extends FMLIndexedMessageToMessageCodec<Packet>
 {
     public boolean silenceStackTrace = false; //TODO add command and config
 
-    public ResonantChannelHandler()
+    public ChannelHandler()
     {
         this.addDiscriminator(0, PacketMouseClick.class);
         this.addDiscriminator(1, PacketHookSync.class);

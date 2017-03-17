@@ -25,7 +25,7 @@ public class PacketManager
     public PacketManager(String channel)
     {
         this.channel = channel;
-        channelEnumMap = NetworkRegistry.INSTANCE.newChannel(channel, new ResonantChannelHandler(), new ResonantPacketHandler());
+        channelEnumMap = NetworkRegistry.INSTANCE.newChannel(channel, new ChannelHandler(), new PacketHandler());
     }
 
     public net.minecraft.network.Packet toMCPacket(Packet packet)
