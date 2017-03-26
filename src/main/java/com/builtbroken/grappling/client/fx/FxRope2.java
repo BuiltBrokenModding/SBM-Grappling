@@ -142,6 +142,8 @@ public class FxRope2 extends EntityFX
     {
         //Set
         tessellator.draw();
+
+        //Render rop
         GL11.glPushMatrix();
         FMLClientHandler.instance().getClient().renderEngine.bindTexture(TEXTURE);
 
@@ -167,6 +169,7 @@ public class FxRope2 extends EntityFX
         catch (Exception e)
         {
             e.printStackTrace();
+            tessellator.draw();
         }
 
         GL11.glPopMatrix();
@@ -238,48 +241,64 @@ public class FxRope2 extends EntityFX
             //Set color
             tessellator.setColorOpaque_F(this.particleRed, this.particleGreen, this.particleBlue);
 
-            //If world exists do light value calculations if we are in a new tile
-            if (world != null && i == 0 || pos_x != prev_x || pos_y != prev_y || pos_z != prev_z)
+            //Try-catch to prevent edge cases that crash during lighting checks
+            try
             {
-                //Set values
-                brightness = baseBrightness;
-                prev_x = pos_x;
-                prev_y = pos_y;
-                prev_z = pos_z;
-
-                //Only change the value if we can not see the sky
-                if (!world.canBlockSeeTheSky(pos_x, pos_y, pos_z))
+                //If world exists do light value calculations if we are in a new tile
+                if (world != null && i == 0 || pos_x != prev_x || pos_y != prev_y || pos_z != prev_z)
                 {
-                    //Get light level based on position
-                    //TODO add option to turn off to improve FPS
-                    final Chunk chunk = world.getChunkFromBlockCoords(pos_x, pos_z);
-                    if (chunk != null)
-                    {
-                        final ExtendedBlockStorage extendedblockstorage = chunk.getBlockStorageArray()[pos_y >> 4];
-                        if (extendedblockstorage != null)
-                        {
-                            int skyLight = world.provider != null && world.provider.hasNoSky ? 0 : extendedblockstorage.getExtSkylightValue(pos_x, pos_y & 15, pos_z);
-                            int blockLight = extendedblockstorage.getExtBlocklightValue(pos_x, pos_y & 15, pos_z);
+                    //Set values
+                    brightness = baseBrightness;
+                    prev_x = pos_x;
+                    prev_y = pos_y;
+                    prev_z = pos_z;
 
-                            float percentage = Math.min(blockLight, skyLight) / 15.0f;
-                            int baseLight = (int) (baseBrightness * 0.75);
-                            int value = (int) (baseLight + ((maxLightValue - baseLight) * percentage));
-                            brightness = (value + baseBrightness) / 2;
+                    //Only change the value if we can not see the sky
+                    if (!world.canBlockSeeTheSky(pos_x, pos_y, pos_z))
+                    {
+                        //Get light level based on position
+                        //TODO add option to turn off to improve FPS
+                        final Chunk chunk = world.getChunkFromBlockCoords(pos_x, pos_z);
+                        if (chunk != null)
+                        {
+                            final ExtendedBlockStorage extendedblockstorage = chunk.getBlockStorageArray()[pos_y >> 4];
+                            if (extendedblockstorage != null)
+                            {
+                                int cx = pos_x & 15;
+                                int cy = pos_y & 15;
+                                int cz = pos_z & 15;
+
+                                int skyLight = 0;
+                                if (world.provider == null || !world.provider.hasNoSky)
+                                {
+                                    skyLight = extendedblockstorage.getExtSkylightValue(cx, cy, cz);
+                                }
+                                int blockLight = extendedblockstorage.getExtBlocklightValue(cx, cy, cz);
+
+                                float percentage = Math.min(blockLight, skyLight) / 15.0f;
+                                int baseLight = (int) (baseBrightness * 0.75);
+                                int value = (int) (baseLight + ((maxLightValue - baseLight) * percentage));
+                                brightness = (value + baseBrightness) / 2;
+                            }
                         }
                     }
-                }
-                else
-                {
-                    brightness = (brightness + baseBrightness) / 2;
-                }
-
-                //Extra debug to help visually see data
-                if (GrapplingHookMod.runningAsDev)
-                {
-                    debugData.put(Vec3.createVectorHelper(pos_x, pos_y, pos_z), brightness);
-
+                    else
+                    {
+                        brightness = (brightness + baseBrightness) / 2;
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            //Extra debug to help visually see data
+            if (GrapplingHookMod.runningAsDev)
+            {
+                debugData.put(Vec3.createVectorHelper(pos_x, pos_y, pos_z), brightness);
+            }
+
 
             //Render all 4 faces for this section
             renderFace(world, 0, position, 0, size, size, size, 2, brightness);
