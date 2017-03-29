@@ -1,0 +1,6 @@
+item.smbgrapplinghook:hook.name=Enterhaken
+item.smbgrapplinghook:hook.info.leftClick=Linksklick zum Feuern
+item.smbgrapplinghook:hook.info.rightClick=Rechtsklick zum Lösen
+item.smbgrapplinghook:hook.info.scrollWheel=Mausrad scrollen zum Ändern der Bewegung
+item.smbgrapplinghook:hook.info.leftClick2=Linksklick halten zum Vorwärtsziehen
+item.smbgrapplinghook:hook.info.leftClick3=Linksklick loslassen zum Stoppen der Bewegung
