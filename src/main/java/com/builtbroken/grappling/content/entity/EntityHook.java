@@ -1,5 +1,6 @@
 package com.builtbroken.grappling.content.entity;
 
+import com.builtbroken.grappling.GrapplingHookMod;
 import com.builtbroken.grappling.content.Hook;
 import com.builtbroken.grappling.content.MovementHandler;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
@@ -42,6 +43,10 @@ public class EntityHook extends Entity implements IEntityAdditionalSpawnData
             {
                 setDead();
             }
+        }
+        else
+        {
+            GrapplingHookMod.proxy.renderRope(this);
         }
         onEntityUpdate();
     }
