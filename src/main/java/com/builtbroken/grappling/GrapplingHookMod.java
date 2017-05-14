@@ -51,7 +51,7 @@ public class GrapplingHookMod
     @Mod.Instance("smbgrapplinghook")
     public static GrapplingHookMod INSTANCE;
 
-    @SidedProxy(clientSide = "com.builtbroken.grappling.ClientProxy", serverSide = "com.builtbroken.grappling.CommonProxy")
+    @SidedProxy(clientSide = "com.builtbroken.grappling.client.ClientProxy", serverSide = "com.builtbroken.grappling.ServerProxy")
     public static CommonProxy proxy;
 
     /** How far can the hook be shot out to hit, -1 means max render */
@@ -89,13 +89,15 @@ public class GrapplingHookMod
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
     {
+        EntityRegistry.registerModEntity(EntityHook.class, "smbEntityHook", 50, GrapplingHookMod.INSTANCE, 100, 15, true);
+        proxy.init();
         packetHandler = new PacketManager("smbgrapplinghook");
-        EntityRegistry.registerModEntity(EntityHook.class, "smbEntityHook", 50, this, 100, 15, true);
     }
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event)
     {
+        proxy.postInit();
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemHook, 1, 0), " B ", "ISI", "IRI", 'B', Blocks.iron_bars, 'I', Items.iron_ingot, 'S', Items.string, 'R', Items.redstone));
     }
 }

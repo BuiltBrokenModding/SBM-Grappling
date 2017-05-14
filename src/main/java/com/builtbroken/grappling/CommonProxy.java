@@ -1,6 +1,7 @@
 package com.builtbroken.grappling;
 
 import com.builtbroken.grappling.content.MovementHandler;
+import com.builtbroken.grappling.content.entity.EntityHook;
 import net.minecraft.entity.player.EntityPlayer;
 
 /**
@@ -80,7 +81,22 @@ public class CommonProxy
         }
     }
 
+    public void renderRope(EntityHook entityHook)
+    {
+
+    }
+
     public void preInit()
+    {
+
+    }
+
+    public void init()
+    {
+
+    }
+
+    public void postInit()
     {
 
     }

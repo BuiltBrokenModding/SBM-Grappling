@@ -1,9 +1,7 @@
 package com.builtbroken.grappling.content.entity;
 
-import com.builtbroken.grappling.client.fx.FxRope2;
 import com.builtbroken.grappling.content.Hook;
 import com.builtbroken.grappling.content.MovementHandler;
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
@@ -12,7 +10,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
 /**
  * @see <a href="https://github.com/BuiltBrokenModding/VoltzEngine/blob/development/license.md">License</a> for what you can and can't do with the code.
@@ -44,22 +41,6 @@ public class EntityHook extends Entity implements IEntityAdditionalSpawnData
             if (owner == null || !MovementHandler.hasHook(owner))
             {
                 setDead();
-            }
-        }
-        else
-        {
-            Entity entity = worldObj.getEntityByID(hook.playerEntityID);
-            if (entity != null)
-            {
-                ForgeDirection dir = ForgeDirection.getOrientation(hook.side);
-                double x = dir.offsetX * 0.4;
-                double y = dir.offsetY * 0.4;
-                double z = dir.offsetZ * 0.4;
-
-                FxRope2 rope = new FxRope2(worldObj,
-                        hook.x + x, hook.y + y, hook.z + z,
-                        entity, 1);
-                FMLClientHandler.instance().getClient().effectRenderer.addEffect(rope);
             }
         }
         onEntityUpdate();
