@@ -9,12 +9,14 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLMissingMappingsEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -30,7 +32,7 @@ import java.io.File;
  * @see <a href="https://github.com/BuiltBrokenModding/VoltzEngine/blob/development/license.md">License</a> for what you can and can't do with the code.
  * Created by Dark(DarkGuardsman, Robert) on 2/27/2017.
  */
-@cpw.mods.fml.common.Mod(modid = "smbgrapplinghook", name = "Grappling Hook", version = GrapplingHookMod.VERSION)
+@cpw.mods.fml.common.Mod(modid = "sbmgrapplinghook", name = "Grappling Hook", version = GrapplingHookMod.VERSION)
 public class GrapplingHookMod
 {
     public static final boolean runningAsDev = System.getProperty("development") != null && System.getProperty("development").equalsIgnoreCase("true");
@@ -48,7 +50,7 @@ public class GrapplingHookMod
 
     public static PacketManager packetHandler;
 
-    @Mod.Instance("smbgrapplinghook")
+    @Mod.Instance("sbmgrapplinghook")
     public static GrapplingHookMod INSTANCE;
 
     @SidedProxy(clientSide = "com.builtbroken.grappling.client.ClientProxy", serverSide = "com.builtbroken.grappling.ServerProxy")
@@ -89,9 +91,9 @@ public class GrapplingHookMod
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
     {
-        EntityRegistry.registerModEntity(EntityHook.class, "smbEntityHook", 50, GrapplingHookMod.INSTANCE, 100, 15, true);
+        EntityRegistry.registerModEntity(EntityHook.class, "sbmEntityHook", 50, GrapplingHookMod.INSTANCE, 100, 15, true);
         proxy.init();
-        packetHandler = new PacketManager("smbgrapplinghook");
+        packetHandler = new PacketManager("sbmgrapplinghook");
     }
 
     @Mod.EventHandler
@@ -99,5 +101,24 @@ public class GrapplingHookMod
     {
         proxy.postInit();
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemHook, 1, 0), " B ", "ISI", "IRI", 'B', Blocks.iron_bars, 'I', Items.iron_ingot, 'S', Items.string, 'R', Items.redstone));
+    }
+
+    @Mod.EventHandler
+    public void missingMappingEvent(FMLMissingMappingsEvent event)
+    {
+        for (FMLMissingMappingsEvent.MissingMapping missingMapping : event.getAll())
+        {
+            final String name = missingMapping.name;
+            final String key = "sbmgrapplinghook:sbmGrapplingHook";
+            if (name.equals("smbgrapplinghook:sbmGrapplingHook")) //Fixes mod ID switch
+            {
+                logger.info("Fixing missing mapping for '" + name + "' replacing with '" + key + "'");
+                Object object = missingMapping.type.getRegistry().getObject(key);
+                if (object != Blocks.air && object != null)
+                {
+                    missingMapping.remap((Item) object);
+                }
+            }
+        }
     }
 }
