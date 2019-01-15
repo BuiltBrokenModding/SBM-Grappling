@@ -1,0 +1,6 @@
+item.smbgrapplinghook:hook.name=Grappin
+item.smbgrapplinghook:hook.info.leftClick=Clic gauche pour tirer
+item.smbgrapplinghook:hook.info.rightClick=Clic droit pour relâcher
+item.smbgrapplinghook:hook.info.scrollWheel=Molette pour changer le mouvement
+item.smbgrapplinghook:hook.info.leftClick2=Maintenir clic gauche pour attirer
+item.smbgrapplinghook:hook.info.leftClick3=Relâcher clic gauche pour stopper le mouvement
