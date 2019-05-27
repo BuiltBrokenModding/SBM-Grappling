@@ -1,11 +1,12 @@
 package com.builtbroken.grappling.network.packets;
 
+import java.util.HashMap;
+
 import com.builtbroken.grappling.client.ClientHookHandler;
 import com.builtbroken.grappling.content.Hook;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.util.Vec3;
 
-import java.util.HashMap;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Used to sync hook data to the client
@@ -15,35 +16,35 @@ import java.util.HashMap;
  */
 public class PacketHookSync extends Packet
 {
-    public Hook playerHook = null;
-    public HashMap<String, Vec3> usernameToHookLocation = new HashMap();
+	public Hook playerHook = null;
+	public HashMap<String, Vec3d> usernameToHookLocation = new HashMap<>();
 
-    @Override
-    public void write(ByteBuf buffer)
-    {
-        buffer.writeBoolean(playerHook != null);
-        if(playerHook != null)
-        {
-            playerHook.write(buffer);
-        }
-    }
+	@Override
+	public void write(ByteBuf buffer)
+	{
+		buffer.writeBoolean(playerHook != null);
+		if(playerHook != null)
+		{
+			playerHook.write(buffer);
+		}
+	}
 
-    @Override
-    public void read(ByteBuf buffer)
-    {
-        if (buffer.readBoolean())
-        {
-            playerHook = Hook.read(buffer);
-        }
-        else
-        {
-            playerHook = null;
-        }
-    }
+	@Override
+	public void read(ByteBuf buffer)
+	{
+		if (buffer.readBoolean())
+		{
+			playerHook = Hook.read(buffer);
+		}
+		else
+		{
+			playerHook = null;
+		}
+	}
 
-    @Override
-    public void handleClientSide()
-    {
-        ClientHookHandler.setHook(playerHook);
-    }
+	@Override
+	public void handleClientSide()
+	{
+		ClientHookHandler.setHook(playerHook);
+	}
 }

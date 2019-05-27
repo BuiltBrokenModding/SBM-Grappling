@@ -2,6 +2,8 @@ package com.builtbroken.grappling;
 
 import com.builtbroken.grappling.content.MovementHandler;
 import com.builtbroken.grappling.content.entity.EntityHook;
+
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.player.EntityPlayer;
 
 /**
@@ -10,94 +12,84 @@ import net.minecraft.entity.player.EntityPlayer;
  */
 public class CommonProxy
 {
-    /**
-     * Called client side to update the position of the player
-     *
-     * @param x
-     * @param y
-     * @param z
-     */
-    public void setPlayerPosition(double x, double y, double z)
-    {
+	/**
+	 * Called client side to update the position of the player
+	 *
+	 * @param x
+	 * @param y
+	 * @param z
+	 */
+	public void setPlayerPosition(double x, double y, double z)
+	{
 
-    }
+	}
 
-    public void handleMouseInput(EntityPlayer player, int button, boolean state, int dwheel)
-    {
-        if (button == 0)
-        {
-            mouseLeftClick(player, state);
-        }
-        else if (button == 1)
-        {
-            mouseRightClick(player, state);
-        }
-        else
-        {
-            mouseScroll(player, dwheel);
-        }
-    }
+	public void handleMouseInput(EntityPlayer player, int button, boolean state, int dwheel)
+	{
+		if (button == 0)
+		{
+			mouseLeftClick(player, state);
+		}
+		else if (button == 1)
+		{
+			mouseRightClick(player, state);
+		}
+		else
+		{
+			mouseScroll(player, dwheel);
+		}
+	}
 
-    protected void mouseScroll(EntityPlayer player, int dwheel)
-    {
-        pullHook(player, dwheel);
-    }
+	protected void mouseScroll(EntityPlayer player, int dwheel)
+	{
+		pullHook(player, dwheel);
+	}
 
-    protected void mouseLeftClick(EntityPlayer player, boolean state)
-    {
-        if (MovementHandler.hasHook(player))
-        {
-            if (state)
-            {
-                pullHook(player, 120);
-            }
-            else if (!player.worldObj.isRemote)
-            {
-                pullHook(player, 0);
-            }
-        }
-        else if (!player.worldObj.isRemote && !state)
-        {
-            MovementHandler.createHook(player);
-        }
-    }
+	protected void mouseLeftClick(EntityPlayer player, boolean state)
+	{
+		if (MovementHandler.hasHook(player))
+		{
+			if (state)
+			{
+				pullHook(player, 120);
+			}
+			else if (!player.world.isRemote)
+			{
+				pullHook(player, 0);
+			}
+		}
+		else if (!player.world.isRemote && !state)
+		{
+			MovementHandler.createHook(player);
+		}
+	}
 
-    protected void pullHook(EntityPlayer player, int movement)
-    {
-        if (!player.worldObj.isRemote)
-        {
-            MovementHandler.pullHook(player, movement);
-        }
-    }
+	protected void pullHook(EntityPlayer player, int movement)
+	{
+		if (!player.world.isRemote)
+		{
+			MovementHandler.pullHook(player, movement);
+		}
+	}
 
-    protected void mouseRightClick(EntityPlayer player, boolean state)
-    {
-        if (!player.worldObj.isRemote)
-        {
-            if (MovementHandler.hasHook(player) && !state)
-            {
-                MovementHandler.clearHook(player);
-            }
-        }
-    }
+	protected void mouseRightClick(EntityPlayer player, boolean state)
+	{
+		if (!player.world.isRemote)
+		{
+			if (MovementHandler.hasHook(player) && !state)
+			{
+				MovementHandler.clearHook(player);
+			}
+		}
+	}
 
-    public void renderRope(EntityHook entityHook)
-    {
+	public void renderRope(EntityHook entityHook)
+	{
 
-    }
+	}
 
-    public void preInit()
-    {
-
-    }
-
-    public void init()
-    {
-
-    }
-
-    public void postInit()
-    {
-
-    }
+	public TextureAtlasSprite getHookSprite()
+	{
+		return null;
+	}
 }

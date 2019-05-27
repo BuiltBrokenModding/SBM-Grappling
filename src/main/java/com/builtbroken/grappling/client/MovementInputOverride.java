@@ -13,39 +13,39 @@ import net.minecraft.util.MovementInputFromOptions;
  */
 public class MovementInputOverride extends MovementInputFromOptions
 {
-    public MovementInput original;
+	public MovementInput original;
 
-    public MovementInputOverride(MovementInput original)
-    {
-        super(Minecraft.getMinecraft().gameSettings);
-        this.original = original;
-        if (this.original instanceof MovementInputOverride)
-        {
-            moveForward = this.original.moveForward;
-            moveStrafe = this.original.moveStrafe;
-            jump = this.original.jump;
-            sneak = this.original.sneak;
-        }
-    }
+	public MovementInputOverride(MovementInput original)
+	{
+		super(Minecraft.getMinecraft().gameSettings);
+		this.original = original;
+		if (this.original instanceof MovementInputOverride)
+		{
+			moveForward = this.original.moveForward;
+			moveStrafe = this.original.moveStrafe;
+			jump = this.original.jump;
+			sneak = this.original.sneak;
+		}
+	}
 
-    @Override
-    public void updatePlayerMoveState()
-    {
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-        if (ClientHookHandler.hook == null)
-        {
-            original.updatePlayerMoveState();
-            player.movementInput = original;
-        }
-        else if (player.onGround)
-        {
-            super.updatePlayerMoveState();
-        }
-        else
-        {
-            this.jump = Minecraft.getMinecraft().gameSettings.keyBindJump.getIsKeyPressed();
-            this.sneak = Minecraft.getMinecraft().gameSettings.keyBindSneak.getIsKeyPressed();
-            //TODO implement swing on the rope
-        }
-    }
+	@Override
+	public void updatePlayerMoveState()
+	{
+		EntityPlayerSP player = Minecraft.getMinecraft().player;
+		if (ClientHookHandler.hook == null)
+		{
+			original.updatePlayerMoveState();
+			player.movementInput = original;
+		}
+		else if (player.onGround)
+		{
+			super.updatePlayerMoveState();
+		}
+		else
+		{
+			this.jump = Minecraft.getMinecraft().gameSettings.keyBindJump.isPressed();
+			this.sneak = Minecraft.getMinecraft().gameSettings.keyBindSneak.isPressed();
+			//TODO implement swing on the rope
+		}
+	}
 }

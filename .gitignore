@@ -5,3 +5,6 @@ build/
 output/
 *.iml
 changelog\.html
+/bin/
+.classpath
+.project

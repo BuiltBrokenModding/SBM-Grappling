@@ -12,7 +12,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 
@@ -60,7 +60,7 @@ task makeChangelog(type: se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask) {
   <h3>{{name}}</h3>
   <ul>
     {{#commits}}
-    <li> <a href="https://github.com/BuiltBrokenModding/SBM-TurtleArmorBoat/commit/{{hash}}" target=_blank> {{{message}}}</a>
+    <li> <a href="https://github.com/BuiltBrokenModding/SBM-Grappling/commit/{{hash}}" target=_blank> {{{message}}}</a>
 </li>
     {{/commits}}
   </ul>
